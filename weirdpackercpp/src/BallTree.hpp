@@ -1,10 +1,12 @@
 #ifndef BALLTREE_HPP
 #define BALLTREE_HPP
 
-
 #include<Eigen/Dense>
+#include<Eigen/Eigenvalues>
 #include<algorithm>
 #include<vector>
+#include<forward_list>
+#include<type_traits>
 
 template<class LeafType,unsigned int D,class REAL=double>
 class balltree
@@ -14,77 +16,113 @@ public:
 	{
 		Eigen::Matrix<REAL,D,1> position;
 		REAL radius;
-		LeafType* leaf_id;
+		LeafType leaf;
+		size_t num_children;
+		REAL temp_projector;
+        ball(const LeafType& lt=LeafType()):leaf(lt),num_children(0)
+        {}
+        ball(const ball& lball,const ball& rball):num_children(lball.num_children+rball.num_children)
+		{
+			Eigen::Matrix<REAL,D,1> pos_mean,childaxis;
+			childaxis=rball.position-lball.position;
+			REAL mg=childaxis.norm();
+			childaxis/=mg;
+			Eigen::Matrix<REAL,D,1> lower=lball.position-lball.radius*childaxis;
+			Eigen::Matrix<REAL,D,1> upper=rball.position+rball.radius*childaxis;
+			radius=(upper-lower).norm()*static_cast<REAL>(0.5);
+			position=(upper+lower)*static_cast<REAL>(0.5);
+		}
 	};
 	struct ballnode
 	{
 		ball boundary;
-		ballnode left;
-		ballnode right;
-		ballnode(ball* bbegin,ball* bend);
+		size_t leftdex;
+		size_t rightdex;
+		ballnode(const ball& b=ball()):
+			boundary(b),
+			leftdex(0),
+			rightdex(0)
+		{}
 	};
 private:
-	std::vector<ballnode> balls;
+	static std::forward_list<ball> build_balltree_dfs(ball* bbegin,ball* bend);
+	std::vector<ballnode> allnodes;
 public:
-	balltree(const ball* bbegin,const ball* bend)
+	balltree(ball* bbegin,ball* bend)
 	{
-		std::vector<ball> balls(bbegin,bend);
+		std::forward_list<ball> ball_list=build_balltree_dfs(bbegin,bend); 
+		allnodes=std::vector<ballnode>(ball_list.begin(),ball_list.end());
+		for(size_t i=0;i<allnodes.size();i++)
+		{
+			if(allnodes[i].boundary.num_children > 0)
+			{
+				allnodes[i].leftdex=1;
+				allnodes[i].rightdex=1+allnodes[i+1].boundary.num_children+1;
+			}
+		}
 	}
+	
 };
 
-template<class LeafType,unsigned int D,class REAL=double>
-balltree::ballnode(ball* bbegin,ball* bend)
+template<class MatrixType> 
+static inline
+auto getDomEigenvector(const MatrixType& A)
+	->typename std::enable_if<MatrixType::RowsAtCompileTime <= 3,decltype(A.col(0))>::type
 {
-
-	//sum (x-mx)*(y-my)' = sum x*y - mx * sum y - my * sum x - sum mx*my;
-	//sum x*y - mx * sum y - my * sum x - sum mx*my;
-	//sum x*y - 2*outer product of sums / N  + outer product of sums
-	Eigen::Matrix<REAL,D,1> pos_sum;
-	Eigen::Matrix<REAL,D,D> pos_lcov;
-	size_t n=bend-bbegin;
-	if(n==1)
-	{
-		boundary=*bbegin;
-		return;
-	}
-	
-	Eigen::Matrix<REAL,D,1> pos_mean,childaxis;
-	
-	if(n==2)
-	{
-		childaxis=bbegin[1].position-bbegin[0].position;
-		pos_mean=bbegin[0].position+childaxis*0.5;
-		childaxis.normalize();
-		left=make_shared<balltree>(bbegin,bbegin+1);
-		right=make_shared<balltree>(bbegin+1,bbegin+2);
-	}
-	else
-	{
-		for(const ball* bi=bbegin;bi != bend;bi++)
-		{
-			pos_sum+=bi->position;
-			pos_lcov+=epos*epos.transposed();
-		}
-		REAL nf=static_cast<REAL>(n);
-		pos_mean=pos_sum/nf;
-		Eigen::Matrix<REAL,D,D> outer_prod_sums=pos_sum*pos_sum.transposed();
-		Eigen::Matrix<REAL,D,D> pos_lcov=pos_lcov-outer_prod_sums*(2.0/nf+1.0/(nf*nf));
-		childaxis=//evd(pos_lcov).largest_vector();
-		
-		//std::partition(bbegin,b  mean based splitting.
-		
-		std::nth_element(bbegin,bbegin+n/2,bend,
-			[childaxis,pos_mean](const ball& a,const ball& b)
-			{
-				return (a.position-pos_mean).dot(childaxis) < (b.position-pos_mean).dot(childaxis);
-			}
-		);
-		left=make_shared<balltree>(bbegin,bbegin+n/2);
-		right=make_shared<balltree>(bbegin+n/2,bend);
-	}
-	boundary.leaf_id=nullptr;
-	Eigen::Vector<REAL,D,1> lower=left->boundary.position-left->boundary.radius*childaxis;
-	Eigen::Vector<REAL,D,1> upper=right->boundary.position+right->boundary.radius*childaxis;
-	boundary.radius=(upper-lower).mag()/2.0;
-	boundary.position=(upper+lower)/2.0;
+	Eigen::SelfAdjointEigenSolver<MatrixType> saes;
+	return saes.computeDirect(A).eigenvectors().col(A.cols()-1);
 }
+template<class MatrixType> 
+static inline
+auto getDomEigenvector(const MatrixType& A)
+	->typename std::enable_if<(MatrixType::RowsAtCompileTime > 3),decltype(A.col(0))>::type
+{
+	Eigen::SelfAdjointEigenSolver<MatrixType> saes;
+	return saes.compute(A).eigenvectors().col(A.cols()-1);
+}
+
+template<class LeafType,unsigned int D,class REAL>
+std::forward_list<typename balltree<LeafType,D,REAL>::ball> balltree<LeafType,D,REAL>::build_balltree_dfs(ball* bbegin,ball* bend)
+{
+	size_t n=bend-bbegin;
+	if(n<=1)
+	{
+		std::forward_list<ball> lo;
+		if(n==1)
+		{
+			lo.push_front(*bbegin);
+		}
+		return lo;
+	}
+	Eigen::Matrix<REAL,D,1> pos_mean,pos_sum=Eigen::Matrix<REAL,D,1>::Zero();
+	Eigen::Matrix<REAL,D,D> pos_lcov=Eigen::Matrix<REAL,D,D>::Zero();
+	for(const ball* bi=bbegin;bi != bend;bi++)
+	{
+		Eigen::Matrix<REAL,D,1> epos=bi->position;
+		pos_sum+=epos;
+		pos_lcov+=epos*epos.transpose();
+	}
+	REAL nf=static_cast<REAL>(n);
+	pos_mean=pos_sum/nf;
+	pos_lcov-=pos_sum*pos_mean.transpose();
+	Eigen::Matrix<REAL,D,1> childaxis=getDomEigenvector(pos_lcov);
+	std::for_each(bbegin,bend,[childaxis,pos_mean](ball& b)
+	{
+		b.temp_projector=(b.position-pos_mean).dot(childaxis);
+	});
+	ball* bmid=bbegin+n/2;
+	std::nth_element(bbegin,bmid,bend,[](const ball& a,const ball& b)
+	{
+		return a.temp_projector < b.temp_projector;
+	});
+	auto left_list=build_balltree_dfs(bbegin,bmid);
+	auto right_list=build_balltree_dfs(bmid,bend);
+	
+	ball newroot(left_list.front(),right_list.front());
+	right_list.splice_after(right_list.before_begin(),left_list,left_list.before_begin(),left_list.end());
+	right_list.push_front(newroot);
+	return right_list;
+}
+
+
+#endif

@@ -6,7 +6,7 @@
 namespace wp
 {
 
-
+typedef std::array<Point,3> Triangle;
 std::vector<Triangle> triangulate(const Shape& shape);
 
 }

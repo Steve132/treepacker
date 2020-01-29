@@ -3,9 +3,7 @@
 
 #include<memory>
 #include<iostream>
-
-
-
+#include "Shape.hpp"
 
 namespace wp
 {
@@ -18,10 +16,13 @@ protected:
 public:
 	SVG();
 	friend std::ostream& operator<<(std::ostream&,const SVG&);
-	
+	friend std::istream& operator>>(std::istream&,SVG&);
+
+	std::vector<wp::Shape> getAllShapes() const;
 };
 
 std::ostream& operator<<(std::ostream&,const SVG&);
+std::istream& operator>>(std::istream&,SVG&);
 
 }
 

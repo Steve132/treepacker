@@ -1,20 +1,20 @@
 #include "Svg.hpp"
-//#include "pugixml/pugixml.hpp"
+#include "pugixml/pugixml.hpp"
 
 class wp::SVG::Impl
 {
 public:
-	//pugi::xml_document doc;
+	pugi::xml_document doc;
 	Impl()
 	{}
 	std::ostream& save(std::ostream& out) const
 	{
-		//doc.save(out);
+		doc.save(out);
 		return out;
 	}
 	std::istream& load(std::istream& inp)
 	{
-		//doc.load(inp);
+		doc.load(inp);
 		return inp;
 	}
 };
@@ -27,7 +27,7 @@ std::ostream& wp::operator<<(std::ostream& out,const wp::SVG& svg)
 {
 	return svg.impl->save(out);
 }
-/*std::istream& operator>>(std::istream& inp,wp::SVG& svg)
+std::istream& wp::operator>>(std::istream& inp,wp::SVG& svg)
 {
 	return svg.impl->load(inp);
-}*/
+}
