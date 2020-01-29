@@ -1,0 +1,4 @@
+use poly2tri
+https://github.com/greenm01/poly2tri/tree/master/poly2tri
+
+svg parse arcs and beizers and ellipses to segments
