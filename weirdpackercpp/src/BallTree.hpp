@@ -19,7 +19,9 @@ public:
 		LeafType leaf;
 		size_t num_children;
 		REAL temp_projector;
-        ball(const LeafType& lt=LeafType()):leaf(lt),num_children(0)
+        ball(const LeafType& lt=LeafType(),REAL trad=0.0,const Eigen::Matrix<REAL,D,1>& pos=Eigen::Matrix<REAL,D,1>::Zero()):
+			leaf(lt),
+			num_children(0)
         {}
         ball(const ball& lball,const ball& rball):num_children(lball.num_children+rball.num_children)
 		{
@@ -46,8 +48,8 @@ public:
 	};
 private:
 	static std::forward_list<ball> build_balltree_dfs(ball* bbegin,ball* bend);
-	std::vector<ballnode> allnodes;
 public:
+	std::vector<ballnode> allnodes;
 	balltree(ball* bbegin,ball* bend)
 	{
 		std::forward_list<ball> ball_list=build_balltree_dfs(bbegin,bend); 
