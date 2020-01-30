@@ -20,10 +20,12 @@ public:
 		size_t num_children;
 		REAL temp_projector;
         ball(const LeafType& lt=LeafType(),REAL trad=0.0,const Eigen::Matrix<REAL,D,1>& pos=Eigen::Matrix<REAL,D,1>::Zero()):
+			position(pos),
+			radius(trad),
 			leaf(lt),
 			num_children(0)
         {}
-        ball(const ball& lball,const ball& rball):num_children(lball.num_children+rball.num_children)
+        ball(const ball& lball,const ball& rball):num_children(lball.num_children+rball.num_children+2)
 		{
 			Eigen::Matrix<REAL,D,1> pos_mean,childaxis;
 			childaxis=rball.position-lball.position;
@@ -59,28 +61,28 @@ public:
 			if(allnodes[i].boundary.num_children > 0)
 			{
 				allnodes[i].leftdex=1;
-				allnodes[i].rightdex=1+allnodes[i+1].boundary.num_children+1;
+				allnodes[i].rightdex=allnodes[i+1].boundary.num_children+2;
 			}
 		}
 	}
 	
 };
 
-template<class MatrixType> 
+template<class VectorType,class MatrixType> 
 static inline
-auto getDomEigenvector(const MatrixType& A)
-	->typename std::enable_if<MatrixType::RowsAtCompileTime <= 3,decltype(A.col(0))>::type
+typename std::enable_if<MatrixType::RowsAtCompileTime <= 3>::type
+getDomEigenvector(VectorType& vout,const MatrixType& A)
 {
 	Eigen::SelfAdjointEigenSolver<MatrixType> saes;
-	return saes.computeDirect(A).eigenvectors().col(A.cols()-1);
+	vout=saes.computeDirect(A).eigenvectors().col(A.cols()-1);
 }
-template<class MatrixType> 
+template<class VectorType,class MatrixType> 
 static inline
-auto getDomEigenvector(const MatrixType& A)
-	->typename std::enable_if<(MatrixType::RowsAtCompileTime > 3),decltype(A.col(0))>::type
+typename std::enable_if<(MatrixType::RowsAtCompileTime > 3)>::type
+getDomEigenvector(VectorType& vout,const MatrixType& A)
 {
 	Eigen::SelfAdjointEigenSolver<MatrixType> saes;
-	return saes.compute(A).eigenvectors().col(A.cols()-1);
+	vout=saes.compute(A).eigenvectors().col(A.cols()-1);
 }
 
 template<class LeafType,unsigned int D,class REAL>
@@ -107,7 +109,9 @@ std::forward_list<typename balltree<LeafType,D,REAL>::ball> balltree<LeafType,D,
 	REAL nf=static_cast<REAL>(n);
 	pos_mean=pos_sum/nf;
 	pos_lcov-=pos_sum*pos_mean.transpose();
-	Eigen::Matrix<REAL,D,1> childaxis=getDomEigenvector(pos_lcov);
+	Eigen::Matrix<REAL,D,1> childaxis;
+	getDomEigenvector(childaxis,pos_lcov);
+	
 	std::for_each(bbegin,bend,[childaxis,pos_mean](ball& b)
 	{
 		b.temp_projector=(b.position-pos_mean).dot(childaxis);

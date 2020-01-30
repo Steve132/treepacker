@@ -3,6 +3,8 @@
 #include<iostream>
 #include "BallTree.hpp"
 #include<fstream>
+#include<thread>
+
 
 int main(int argc,char** argv)
 {
@@ -35,9 +37,14 @@ int main(int argc,char** argv)
 		all_balls.emplace_back(tris[i],rad,position);
 	}
 	
+	
 	balltree<wp::Triangle,2,float> balltree(all_balls.data(),all_balls.data()+all_balls.size());
 	
-	
+	for(size_t i=0;i<balltree.allnodes.size();i++)
+	{
+		std::cout << i << ":" << balltree.allnodes[i].boundary.position.transpose() << " : " << balltree.allnodes[i].boundary.radius << std::endl;
+		std::cout << ":" << balltree.allnodes[i].leftdex << "," << balltree.allnodes[i].rightdex << std::endl;
+	}
 
 	return 0;
 }

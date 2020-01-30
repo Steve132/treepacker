@@ -17,5 +17,5 @@ target_link_libraries(weirdpacker pugixml poly2tri)
 
 add_executable(test_shape
 	test_shape.cpp)
-target_link_libraries(test_shape weirdpacker)
+target_link_libraries(test_shape weirdpacker pthread)
 set_target_properties(test_shape PROPERTIES CXX_STANDARD 11)
