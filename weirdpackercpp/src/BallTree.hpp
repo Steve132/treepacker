@@ -36,6 +36,10 @@ public:
 			radius=(upper-lower).norm()*static_cast<REAL>(0.5);
 			position=(upper+lower)*static_cast<REAL>(0.5);
 		}
+		bool intersect(const ball& b) const
+		{
+			return (b.position-position).squaredNorm() < (b.radius+radius);
+		}
 	};
 	struct ballnode
 	{
@@ -64,6 +68,24 @@ public:
 				allnodes[i].rightdex=allnodes[i+1].boundary.num_children+2;
 			}
 		}
+	}
+	
+	template<class LeafIntersectFunc>
+	bool intersect(const ball& b,LeafIntersectFunc leaf_intersect,size_t root=0) const
+	{
+		const ballnode& thisnode=allnodes[root];
+		bool did=b.intersect(thisnode.boundary);
+		if(!did) return false; //if query fails, fail.
+		else if(thisnode.boundary.num_children) //if query succeeds and root is not a leaf
+		{
+			if(intersect(b,leaf_intersect,thisnode.leftdex)) return true;  //query left
+			return intersect(b,leaf_intersect,thisnode.rightdex);          //return results of querying right if left fails.
+		}
+		else if(b.num_children==0)			//if b is a leaf then run the leaf test against both.
+		{
+			return leaf_intersect(b.leaf,thisnode.boundary.leaf);
+		}
+		return true; //query is not a leaf but the root is
 	}
 	
 };
