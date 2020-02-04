@@ -71,15 +71,15 @@ public:
 	}
 	
 	template<class LeafIntersectFunc>
-	bool intersect(const ball& b,LeafIntersectFunc leaf_intersect,size_t root=0) const
+	bool intersect_r(const ball& b,LeafIntersectFunc leaf_intersect,size_t root=0) const
 	{
 		const ballnode& thisnode=allnodes[root];
 		bool did=b.intersect(thisnode.boundary);
 		if(!did) return false; //if query fails, fail.
 		else if(thisnode.boundary.num_children) //if query succeeds and root is not a leaf
 		{
-			if(intersect(b,leaf_intersect,thisnode.leftdex)) return true;  //query left
-			return intersect(b,leaf_intersect,thisnode.rightdex);          //return results of querying right if left fails.
+			if(intersect_r(b,leaf_intersect,thisnode.leftdex)) return true;  //query left
+			return intersect_r(b,leaf_intersect,thisnode.rightdex);          //return results of querying right if left fails.
 		}
 		else if(b.num_children==0)			//if b is a leaf then run the leaf test against both.
 		{
@@ -88,6 +88,23 @@ public:
 		return true; //query is not a leaf but the root is
 	}
 	
+	template<class LeafIntersectFunc>
+	bool intersect_i(const ball& b,LeafIntersectFunc leaf_intersect,size_t root=0) const
+	{
+		while(root!=allnodes.size())
+		{
+			const ballnode& thisnode=allnodes[root++];
+			if(thisnode.boundary.num_children==0)
+			{
+				if(leaf_intersect(b.leaf,thisnode.boundary.leaf)) return true;
+			}
+			else if(!b.intersect(thisnode.boundary))
+			{
+				root+=thisnode.boundary.num_children;
+			}
+		}
+		return false;
+	}
 };
 
 template<class VectorType,class MatrixType> 

@@ -1,0 +1,189 @@
+struct triangle
+{
+   vec2 p[3];
+};
+float signt (vec2 p1, vec2 p2, vec2 p3)
+{
+    return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+}
+
+bool PointInTriangle (vec2 pt, triangle t)
+{
+    float d1, d2, d3;
+    bool has_neg, has_pos;
+
+    d1 = signt(pt, t.p[0],t.p[1]);
+    d2 = signt(pt, t.p[1], t.p[2]);
+    d3 = signt(pt, t.p[2],t.p[0]);
+
+    has_neg = (d1 < 0.0) || (d2 < 0.0) || (d3 < 0.0);
+    has_pos = (d1 > 0.0) || (d2 > 0.0) || (d3 > 0.0);
+
+    return !(has_neg && has_pos);
+}
+float signedDistance(vec2 p0,vec2 p1,vec2 v)
+{
+    return determinant(mat2(v-p1,p1-p0));
+}
+bool allSameSide(vec2 p0,vec2 p1,triangle points)
+{
+    vec3 D=vec3(
+        signedDistance(p0,p1,points.p[0]),
+        signedDistance(p0,p1,points.p[1]),
+        signedDistance(p0,p1,points.p[2]));
+   	bvec3 Ds=lessThan(D,vec3(0.0));
+    return Ds.x==Ds.y==Ds.z;
+}
+bool anyoutsideCross(triangle t1,triangle t2)
+{
+    return !(allSameSide(t1.p[1],t1.p[0],t2) 
+        && allSameSide(t1.p[2],t1.p[1],t2) 
+        && allSameSide(t1.p[0],t1.p[2],t2));
+}
+
+bool intersect(triangle t1,triangle t2)
+{
+    return !(anyoutsideCross(t1,t2) || anyoutsideCross(t2,t1));
+}
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    // Normalized pixel coordinates (from 0 to 1)
+    vec2 uv = fragCoord/iResolution.xy;
+    vec2 ms = iMouse.xy/iResolution.xy;
+
+    triangle t1;
+    t1.p=vec2[](vec2(.5,.25),vec2(.25,.75),vec2(.75,.75));
+    triangle t2;
+    t2.p=vec2[](vec2(0,-.05)+ms,vec2(-.05,.05)+ms,vec2(.05,.05)+ms);
+    
+    if(PointInTriangle(uv,t1))
+    {
+        fragColor = vec4(1.0,0.0,0.0,1.0);
+    }
+    else if(PointInTriangle(uv,t2))
+    {
+        fragColor = vec4(0.0,1.0,0.0,1.0);
+    }
+    else if(intersect(t1,t2))
+    {
+        fragColor = vec4(0.0,0.0,1.0,1.0);
+    }
+    else
+    {
+        fragColor = vec4(0.0,0.0,0.0,1.0);
+    }
+    
+}
+
+
+
+
+
+struct triangle
+{
+    vec2 p[3];
+}
+
+bool cross2(triangle points,triangle tri)
+{
+    vec2 dA=points[0]-tri[2];
+    vec2 dB=points[1]-tri[2];
+    vec2 dC=points[2]-tri[2];
+
+    d21X=tri[2].x-tri[1].x;
+    d12Y=tri[1].y-tri[2].x;
+    vec2 d0=tri[0]-tri[2];
+    float D=dot(d0,)
+}
+
+ax+by+c=0
+a(x0)+b(y0)+c=0
+a(x1)+b(y1)+c=0
+a(x1-x0)+b(y1-y0)=0
+
+a,b=rotate 90 degrees
+=b,-a
+c=-dot(a,p1)float signedDistance(vec2 p1,vec2 p0,vec2 v)
+{
+    return determinant(mat2(v-p1,p1-p0));
+}
+
+https://stackoverflow.com/questions/2778240/detection-of-triangle-collision-in-2d-space
+bool cross2(triangle points, triangle tri) {
+    vec2 dA=points.p[0]-tri.p[2];
+    vec2 dB=points.p[1]-tri.p[2];
+    vec2 dC=points.p[2]-tri.p[2];
+    
+    vec2 d12 = tri.p[1]-tri.p[2];
+    vec2 d20 = tri.p[2]-tri.p[0];
+      
+    float D = d12.y * d20.x - d12.x * d20.y;
+    D=-D;
+    
+    vec3 dABCx=vec3(dA.x,dB.x,dC.x);
+    vec3 dABCy=vec3(dA.y,dB.y,dC.y);
+    
+    vec3 s = dABCx*d12.y - dABCy*d12.x;
+    vec3 t = dABCx*d20.y - dABCy*d20.x;
+    
+    if(D < 0.0)
+    {
+        s=-s;
+        t=-t;
+        D=-D;
+    }
+
+    return all(lessThanEqual(s,vec3(0.0)))
+        || all(lessThanEqual(t,vec3(0.0)))
+        || all(greaterThanEqual(s+t,vec3(D)));
+}
+
+bool triangleIntersect(triangle t0,triangle t1)
+{
+    return !(cross2(t0,t1) || cross2(t1,t0));
+}
+
+var trianglesIntersect4 = function(t0, t1) {
+  return !(cross2(t0,t1) ||
+           cross2(t1,t0));
+}
+
+
+///all glsl
+
+
+bool cross2(triangle points, triangle tri) {
+  vec2 pa = points.p[0];
+  vec2 pb = points.p[1];
+  vec2 pc = points.p[2];
+  vec2 p0 = tri.p[0];
+  vec2 p1 = tri.p[1];
+  vec2 p2 = tri.p[2];
+  float dXa = pa.x - p2.x;
+  float dYa = pa.y - p2.y;
+  float dXb = pb.x - p2.x;
+  float dYb = pb.y - p2.y;
+  float dXc = pc.x - p2.x;
+  float dYc = pc.y - p2.y;
+  float dX21 = p2.x - p1.x;
+  float dY12 = p1.y - p2.y;
+  float D = dY12 * (p0.x - p2.x) + dX21 * (p0.y - p2.y);
+  float sa = dY12 * dXa + dX21 * dYa;
+  float sb = dY12 * dXb + dX21 * dYb;
+  float sc = dY12 * dXc + dX21 * dYc;
+  float ta = (p2.y - p0.y) * dXa + (p0.x - p2.x) * dYa;
+  float tb = (p2.y - p0.y) * dXb + (p0.x - p2.x) * dYb;
+  float tc = (p2.y - p0.y) * dXc + (p0.x - p2.x) * dYc;
+  if (D < 0) return ((sa >= 0 && sb >= 0 && sc >= 0) ||
+                     (ta >= 0 && tb >= 0 && tc >= 0) ||
+                     (sa+ta <= D && sb+tb <= D && sc+tc <= D));
+  return ((sa <= 0 && sb <= 0 && sc <= 0) ||
+          (ta <= 0 && tb <= 0 && tc <= 0) ||
+          (sa+ta >= D && sb+tb >= D && sc+tc >= D));
+}
+
+var trianglesIntersect4 = function(t0, t1) {
+  return !(cross2(t0,t1) ||
+           cross2(t1,t0));
+}

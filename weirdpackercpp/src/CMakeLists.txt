@@ -11,6 +11,8 @@ add_library(weirdpacker
 	Bezier.cpp
 	Bezier.hpp
 	Bezier.inl
+	Path.cpp
+	Path.hpp
 )
 
 set_target_properties(weirdpacker PROPERTIES CXX_STANDARD 11)

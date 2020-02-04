@@ -47,14 +47,14 @@ int main(int argc,char** argv)
 	typename balltree<wp::Triangle,2,float>::ball test;
 	
 	test.position=wp::Point(1.15,.5);
-	test.radius=0.3;
+	test.radius=0.1;
 	test.leaf=wp::Triangle{
 		test.position+wp::Point(0.0,1.0)*test.radius,
 		test.position+wp::Point(0.86602540378,-0.5)*test.radius,
 		test.position+wp::Point(-0.86602540378,-0.5)*test.radius
 	};
 	
-	std::cout << "Intersected: " << balltree.intersect(test,wp::intersect);
+	std::cout << "Intersected: " << balltree.intersect_i(test,wp::intersect);
 	
 	return 0;
 }

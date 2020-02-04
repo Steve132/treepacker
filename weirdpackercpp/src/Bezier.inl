@@ -66,7 +66,7 @@ inline XYZ Bezier3Interp(XYZ p1,XYZ p2,XYZ p3,XYZ p4,double mu)
    mum13 = mum1 * mum1 * mum1;
    mu3 = mu * mu * mu;
 
-   p = p1*mum13* + p2*(3.0*mu*mum1*mum1) + p3*(3.0*mu*mu*mum1) + p4*(mu3);
+   p = p1*mum13 + p2*(3.0*mu*mum1*mum1) + p3*(3.0*mu*mu*mum1) + p4*(mu3);
 
    return(p);
 }
@@ -102,5 +102,40 @@ template<size_t N,class VectorType>
 inline VectorType Bezier<N,VectorType>::interpolate(double mu) const
 {
 	return interp_implementation<N,VectorType>::doit(controlpoints,mu);
+}
+template<size_t N,class VectorType>
+inline double Bezier<N,VectorType>::average_segment_norm(size_t n) const
+{
+	double tot=0.0;
+	VectorType v0=interpolate(0.0);
+	double d=((double)1.0)/((double)n);
+	for(size_t i=1;i<n;i++)
+	{
+		VectorType v1=interpolate(((double)i)*d);
+		tot+=(v1-v0).norm();
+	}
+	return tot*d;
+}
+template<size_t N,class VectorType>
+inline size_t Bezier<N,VectorType>::estimate_num_segments(double norm_target,size_t start) const
+{
+	double an=average_segment_norm(start);
+	if(an < norm_target)
+	{
+		while(an < norm_target)
+		{
+			start/=2;
+			an=average_segment_norm(start);
+		}
+	}
+	else
+	{
+		while(an >= norm_target)
+		{
+			start*=2;
+			an=average_segment_norm(start);
+		}
+	}
+	return start;
 }
 
