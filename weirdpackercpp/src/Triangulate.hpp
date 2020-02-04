@@ -9,6 +9,16 @@ namespace wp
 typedef std::array<Point,3> Triangle;
 std::vector<Triangle> triangulate(const Shape& shape);
 
+class TriangulatedShape
+{
+public:
+	std::vector<Triangle> triangles;
+	TriangulatedShape(const Shape& sh);
+	float outer_area;
+	std::vector<float> holes_area;
+	
+	
+};
 namespace {
 
 inline bool crossIntersect(const Triangle& points,const Triangle& tri)

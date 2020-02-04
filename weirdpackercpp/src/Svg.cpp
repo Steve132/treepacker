@@ -31,3 +31,4 @@ std::istream& wp::operator>>(std::istream& inp,wp::SVG& svg)
 {
 	return svg.impl->load(inp);
 }
+

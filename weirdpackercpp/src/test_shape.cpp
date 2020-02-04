@@ -5,7 +5,6 @@
 #include<fstream>
 #include<thread>
 
-
 int main(int argc,char** argv)
 {
 	wp::Shape input;
