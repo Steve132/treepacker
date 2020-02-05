@@ -91,7 +91,7 @@ public:
 	template<class LeafIntersectFunc>
 	bool intersect_i(const ball& b,LeafIntersectFunc leaf_intersect,size_t root=0) const
 	{
-		while(root!=allnodes.size())
+		while(root < allnodes.size())
 		{
 			const ballnode& thisnode=allnodes[root++];
 			if(thisnode.boundary.num_children==0)

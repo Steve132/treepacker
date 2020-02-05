@@ -6,7 +6,7 @@
 
 namespace wp
 {
-	wp::Shape path2shape(std::istream& inp,double points_per_unit);
+	wp::Shape path2shape(std::istream& inp,const std::string& name,double points_per_unit);
 }
 
 #endif

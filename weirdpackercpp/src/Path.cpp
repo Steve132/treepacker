@@ -6,6 +6,7 @@
 #include<algorithm>
 #include<fstream>
 #include "Bezier.hpp"
+#include<stdexcept>
 using namespace std;
 
 struct PathCommand
@@ -42,11 +43,11 @@ struct SegmentsContext
 	int previous_bezier_command; //0 means none, 2 means quadratic, 3 means cubic 
 	
 	SegmentsContext(double ppu):
-	current_subpath(Eigen::Vector2f::Zero()),
-	cursor(Eigen::Vector2f::Zero()),
-	points_per_unit(ppu),
-	previous_control(Eigen::Vector2f::Zero()),
-	previous_bezier_command(0)
+		current_subpath(Eigen::Vector2f::Zero()),
+		cursor(Eigen::Vector2f::Zero()),
+		points_per_unit(ppu),
+		previous_control(Eigen::Vector2f::Zero()),
+		previous_bezier_command(0)
 	{}
 	void executePathCommand(const PathCommand& pc);
 	void reset_bezier_control(int pbc=0)
@@ -111,11 +112,9 @@ struct SegmentsContext
 	{
 		cursor=endpoint;
 		reset_bezier_control(0);
+		throw std::invalid_argument("Arcs are currently not supported by pathing library");
 	}
 };
-
-
-
 
 void SegmentsContext::executePathCommand(const PathCommand& pc)
 {
@@ -285,11 +284,29 @@ std::ostream& operator<<(std::ostream& out,const PathCommand& cmd)
 
 namespace wp
 {
-wp::Shape path2shape(std::istream& inp,double points_per_unit)
+wp::Shape path2shape(std::istream& inp,const std::string& name,double points_per_unit)
 {
 	auto CommandIterBegin=std::istream_iterator<PathCommand>(inp);
 	auto CommandIterEnd=std::istream_iterator<PathCommand>();
-	std::copy(CommandIterBegin,CommandIterEnd,std::ostream_iterator<PathCommand>(cout,"\n"));
-	return wp::Shape();
+	SegmentsContext sc(points_per_unit);
+	
+	std::for_each(CommandIterBegin,CommandIterEnd,[&sc](const PathCommand& pc)
+		{
+			sc.executePathCommand(pc);
+		}
+	);
+	sc.endSubpath();
+	wp::Shape sp;
+	sp.id=name;
+	sp.outerline=sc.subpaths[0].segments;
+	if(sc.subpaths.size())
+	{
+		sp.holes.resize(sc.subpaths.size()-1);
+		for(size_t i=0;i<sp.holes.size();i++)
+		{
+			sp.holes[i]=sc.subpaths[i+1].segments;
+		}
+	}
+	return sp;
 }
 }
