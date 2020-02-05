@@ -1,24 +1,13 @@
-add_subdirectory(deps)
+add_subdirectory(trail)
 
 add_library(weirdpacker
-	Triangulate.cpp
-	Triangulate.hpp
-	Svg.cpp
-	Svg.hpp
+	BallTree.cpp
 	BallTree.hpp
-	Shape.cpp
-	Shape.hpp
-	Bezier.cpp
-	Bezier.hpp
-	Bezier.inl
-	Path.cpp
-	Path.hpp
 )
 
 set_target_properties(weirdpacker PROPERTIES CXX_STANDARD 11)
-target_include_directories(weirdpacker PUBLIC deps)
-target_link_libraries(weirdpacker pugixml poly2tri)
-
+target_include_directories(weirdpacker PUBLIC trail)
+target_link_libraries(weirdpacker trail)
 
 add_executable(test_shape
 	test_shape.cpp)
