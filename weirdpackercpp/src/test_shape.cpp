@@ -40,8 +40,8 @@ int main(int argc,char** argv)
 	
 	for(size_t i=0;i<balltree.allnodes.size();i++)
 	{
-		std::cout << i << ":" << balltree.allnodes[i].boundary.position.transpose() << " : " << balltree.allnodes[i].boundary.radius << std::endl;
-		std::cout << ":" << balltree.allnodes[i].leftdex << "," << balltree.allnodes[i].rightdex << std::endl;
+		const auto& thisball=balltree.allnodes[i];
+		std::cout << i << ":" << thisball.position.transpose() << " : " << thisball.radius << std::endl;
 	}
 	
 	typename balltree<wp::Triangle,2,float>::ball test;
@@ -54,7 +54,7 @@ int main(int argc,char** argv)
 		test.position+wp::Point(-0.86602540378,-0.5)*test.radius
 	};
 	
-	std::cout << "Intersected: " << balltree.intersect_i(test,wp::intersect);
+	std::cout << "Intersected: " << balltree.intersect(test,wp::intersect);
 	
 	return 0;
 }

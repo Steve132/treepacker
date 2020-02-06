@@ -41,66 +41,30 @@ public:
 			return (b.position-position).squaredNorm() < (b.radius+radius);
 		}
 	};
-	struct ballnode
-	{
-		ball boundary;
-		size_t leftdex;
-		size_t rightdex;
-		ballnode(const ball& b=ball()):
-			boundary(b),
-			leftdex(0),
-			rightdex(0)
-		{}
-	};
 private:
 	static std::forward_list<ball> build_balltree_dfs(ball* bbegin,ball* bend);
 public:
-	std::vector<ballnode> allnodes;
+	std::vector<ball> allnodes;
+	
 	balltree(ball* bbegin,ball* bend)
 	{
 		std::forward_list<ball> ball_list=build_balltree_dfs(bbegin,bend); 
-		allnodes=std::vector<ballnode>(ball_list.begin(),ball_list.end());
-		for(size_t i=0;i<allnodes.size();i++)
-		{
-			if(allnodes[i].boundary.num_children > 0)
-			{
-				allnodes[i].leftdex=1;
-				allnodes[i].rightdex=allnodes[i+1].boundary.num_children+2;
-			}
-		}
+		allnodes=std::vector<ball>(ball_list.begin(),ball_list.end());
 	}
 	
 	template<class LeafIntersectFunc>
-	bool intersect_r(const ball& b,LeafIntersectFunc leaf_intersect,size_t root=0) const
-	{
-		const ballnode& thisnode=allnodes[root];
-		bool did=b.intersect(thisnode.boundary);
-		if(!did) return false; //if query fails, fail.
-		else if(thisnode.boundary.num_children) //if query succeeds and root is not a leaf
-		{
-			if(intersect_r(b,leaf_intersect,thisnode.leftdex)) return true;  //query left
-			return intersect_r(b,leaf_intersect,thisnode.rightdex);          //return results of querying right if left fails.
-		}
-		else if(b.num_children==0)			//if b is a leaf then run the leaf test against both.
-		{
-			return leaf_intersect(b.leaf,thisnode.boundary.leaf);
-		}
-		return true; //query is not a leaf but the root is
-	}
-	
-	template<class LeafIntersectFunc>
-	bool intersect_i(const ball& b,LeafIntersectFunc leaf_intersect,size_t root=0) const
+	bool intersect(const ball& b,LeafIntersectFunc leaf_intersect,size_t root=0) const
 	{
 		while(root < allnodes.size())
 		{
-			const ballnode& thisnode=allnodes[root++];
-			if(thisnode.boundary.num_children==0)
+			const ball& thisnode=allnodes[root++];
+			if(thisnode.num_children==0)
 			{
-				if(leaf_intersect(b.leaf,thisnode.boundary.leaf)) return true;
+				if(leaf_intersect(b.leaf,thisnode.leaf)) return true;
 			}
-			else if(!b.intersect(thisnode.boundary))
+			else if(!b.intersect(thisnode))
 			{
-				root+=thisnode.boundary.num_children;
+				root+=thisnode.num_children;
 			}
 		}
 		return false;
