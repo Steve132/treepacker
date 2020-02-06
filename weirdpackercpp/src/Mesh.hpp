@@ -17,8 +17,6 @@ public:
 	//std::vector<float> holes_area;
 	Eigen::AlignedBox2f bounding_box;
 	
-	
-	
 	static Mesh transform(const Eigen::Matrix<float,2,3>& Rt,const Mesh& trishape);
 	static std::vector<Triangle> triangulate(const trail::Shape& shape);
 };

@@ -1,0 +1,44 @@
+set of parents (balltrees for parent configurations)
+
+set of children to try per parent
+
+set of rotations
+
+set of child y offsets
+
+This is threaded over N, in this order, with cache dor each ne
+
+intersection kernel:
+set of (child,parent) pairs to try
+
+
+
+for each pair find the rotation and offset that minimizes the metric.
+
+
+set of child x offsets (should iterate per thread on this?)
+
+#thread over (parents x children) and each y offset...
+#iterate on x until first success is found using intersections inside each thread
+
+select(const MeshTree& parents,const MeshTree& children,const std::vector<double>& yoffsets)
+{
+	size_t N=parents.size()*children.size();
+	#pragma omp parallel for
+	for(size_t i=0;i<N;i++)
+	{
+	for(size_t yi=0;yi<yoffsets.size();yi++)
+	{
+		size_t pi=i/children.size();
+		size_t ci=i % children.size();
+		
+		for(size_t xi=0;xi<xmax;xi++)
+		{
+			
+		}
+	}
+		
+	}
+} 
+
+This is almost certainly going to need to have 

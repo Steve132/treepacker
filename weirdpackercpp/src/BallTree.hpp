@@ -8,38 +8,52 @@
 #include<forward_list>
 #include<type_traits>
 
+template<unsigned int D,class REAL=double>
+struct ballbase
+{
+	Eigen::Matrix<REAL,D,1> position;
+	REAL radius;
+	size_t num_children;
+	REAL temp_projector;
+	ballbase(const Eigen::Matrix<REAL,D,1>& pos=Eigen::Matrix<REAL,D,1>::Zero(),REAL trad=0.0):
+		position(pos),
+		radius(trad),
+		num_children(0)
+	{}
+	ballbase(const ballbase& lball,const ballbase& rball):
+		num_children(lball.num_children+rball.num_children+2)
+	{
+		Eigen::Matrix<REAL,D,1> pos_mean,childaxis;
+		childaxis=rball.position-lball.position;
+		REAL mg=childaxis.norm();
+		childaxis/=mg;
+		Eigen::Matrix<REAL,D,1> lower=lball.position-lball.radius*childaxis;
+		Eigen::Matrix<REAL,D,1> upper=rball.position+rball.radius*childaxis;
+		radius=(upper-lower).norm()*static_cast<REAL>(0.5);
+		position=(upper+lower)*static_cast<REAL>(0.5);
+	}
+	bool intersect(const ballbase& b) const
+	{
+		return (b.position-position).squaredNorm() < (b.radius+radius);
+	}
+};
+
 template<class LeafType,unsigned int D,class REAL=double>
 class balltree
 {
 public:
-	struct ball
+	struct ball: public ballbase<D,REAL>
 	{
-		Eigen::Matrix<REAL,D,1> position;
-		REAL radius;
 		LeafType leaf;
-		size_t num_children;
-		REAL temp_projector;
-        ball(const LeafType& lt=LeafType(),REAL trad=0.0,const Eigen::Matrix<REAL,D,1>& pos=Eigen::Matrix<REAL,D,1>::Zero()):
-			position(pos),
-			radius(trad),
-			leaf(lt),
-			num_children(0)
-        {}
-        ball(const ball& lball,const ball& rball):num_children(lball.num_children+rball.num_children+2)
-		{
-			Eigen::Matrix<REAL,D,1> pos_mean,childaxis;
-			childaxis=rball.position-lball.position;
-			REAL mg=childaxis.norm();
-			childaxis/=mg;
-			Eigen::Matrix<REAL,D,1> lower=lball.position-lball.radius*childaxis;
-			Eigen::Matrix<REAL,D,1> upper=rball.position+rball.radius*childaxis;
-			radius=(upper-lower).norm()*static_cast<REAL>(0.5);
-			position=(upper+lower)*static_cast<REAL>(0.5);
-		}
-		bool intersect(const ball& b) const
-		{
-			return (b.position-position).squaredNorm() < (b.radius+radius);
-		}
+		ball(){}
+		ball(const LeafType& lt,const Eigen::Matrix<REAL,D,1>& pos,REAL trad): //its illegal to make an empty leaf node
+			ballbase<D,REAL>(pos,trad),
+			leaf(lt)
+		{}
+		ball(const ballbase<D,REAL>& a,const ballbase<D,REAL>& b,const LeafType& lt=LeafType()):
+			ballbase<D,REAL>(a,b),
+			leaf(lt)
+		{}
 	};
 private:
 	static std::forward_list<ball> build_balltree_dfs(ball* bbegin,ball* bend);
@@ -52,22 +66,30 @@ public:
 		allnodes=std::vector<ball>(ball_list.begin(),ball_list.end());
 	}
 	
-	template<class LeafIntersectFunc>
-	bool intersect(const ball& b,LeafIntersectFunc leaf_intersect,size_t root=0) const
+	template<class ClientIntersectFunc>
+	bool intersect_client(ClientIntersectFunc client_intersect_func,size_t root=0) const
 	{
 		while(root < allnodes.size())
 		{
 			const ball& thisnode=allnodes[root++];
-			if(thisnode.num_children==0)
+			if(client_intersect_func(thisnode))
 			{
-				if(leaf_intersect(b.leaf,thisnode.leaf)) return true;
+				return true;
 			}
-			else if(!b.intersect(thisnode))
-			{
-				root+=thisnode.num_children;
-			}
+			root+=thisnode.num_children;
 		}
 		return false;
+	}
+	
+	template<class LeafBallType,class LeafIntersectFunc>
+	bool intersect(const LeafBallType& b,LeafIntersectFunc leaf_intersect,size_t root=0)
+	{
+		auto client_func=[&b,&leaf_intersect](const ball& other)
+		{
+			if(!(b.num_children || other.num_children)) return b.intersect(other);
+			return leaf_intersect(b.leaf,other.leaf);
+		};
+		return intersect_client<decltype(client_func)>(client_func,root);
 	}
 };
 

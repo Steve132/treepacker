@@ -82,3 +82,22 @@ triangles(sh)
 	}
 }
 
+wp::Mesh wp::Mesh::transform(const Eigen::Matrix<float, 2, 3>& Rt, const wp::Mesh& trishape)
+{
+	wp::Mesh newmesh(trishape);
+	if(newmesh.triangles.size())
+	{
+		newmesh.triangles[0]=Triangle::transform(Rt,newmesh.triangles[0]);
+		newmesh.bounding_box=newmesh.triangles[0].bounds();
+		for(size_t i=1;i<newmesh.triangles.size();i++)
+		{
+			Triangle& ntri=newmesh.triangles[i];
+			newmesh.bounding_box.extend(ntri.p[0]);
+			newmesh.bounding_box.extend(ntri.p[1]);
+			newmesh.bounding_box.extend(ntri.p[2]);
+		}
+	}
+	return newmesh;
+}
+
+

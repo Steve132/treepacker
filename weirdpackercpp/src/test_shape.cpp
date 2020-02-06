@@ -33,7 +33,7 @@ int main(int argc,char** argv)
 			(tris[i].p[2]-position).norm()
 		};
 		double rad=*std::max_element(&distances[0],&distances[0]+3);
-		all_balls.emplace_back(tris[i],rad,position);
+		all_balls.emplace_back(tris[i],position,rad);
 	}
 	
 	balltree<wp::Triangle,2,float> balltree(all_balls.data(),all_balls.data()+all_balls.size());
