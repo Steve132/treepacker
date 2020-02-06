@@ -4,7 +4,7 @@
 #include<algorithm>
 
 
-static std::vector<p2t::Point*> polyline_convert(const std::vector<wp::Point>& l)
+static std::vector<p2t::Point*> polyline_convert(const std::vector<trail::Point>& l)
 {
 	std::vector<p2t::Point*> p2o(l.size());
 	for(size_t i=0;i<l.size();i++)
@@ -13,12 +13,12 @@ static std::vector<p2t::Point*> polyline_convert(const std::vector<wp::Point>& l
 	}
 	return p2o;
 }
-static std::vector<wp::Point> polyline_backconvert(const std::vector<p2t::Point*>& pref)
+static std::vector<trail::Point> polyline_backconvert(const std::vector<p2t::Point*>& pref)
 {
-	std::vector<wp::Point> p2o(pref.size());
+	std::vector<trail::Point> p2o(pref.size());
 	for(size_t i=0;i<pref.size();i++)
 	{
-		p2o[i]=wp::Point(pref[i]->x,pref[i]->y);
+		p2o[i]=trail::Point(pref[i]->x,pref[i]->y);
 	}
 	return p2o;
 }
@@ -31,9 +31,9 @@ static std::vector<wp::Triangle> triangle_backconvert(const std::vector<p2t::Tri
 		std::array<const p2t::Point*,3> points{tiref.GetPoint(0),tiref.GetPoint(1),tiref.GetPoint(2)};
 
 		wp::Triangle tri{
-			wp::Point{points[0]->x,points[0]->y},
-			wp::Point{points[1]->x,points[1]->y},
-			wp::Point{points[2]->x,points[2]->y}
+			trail::Point{points[0]->x,points[0]->y},
+			trail::Point{points[1]->x,points[1]->y},
+			trail::Point{points[2]->x,points[2]->y}
 		};
 		t2o[i]=tri;
 	}
@@ -47,7 +47,7 @@ static void polyline_delete(std::vector<p2t::Point*>& pref)
 	}
 	pref.clear();
 }
-std::vector<wp::Triangle> wp::triangulate(const Shape& shape)
+std::vector<wp::Triangle> wp::triangulate(const trail::Shape& shape)
 {
 	std::vector<p2t::Point*> outer_line=polyline_convert(shape.outerline);
 	std::shared_ptr<p2t::CDT> pcdt(new p2t::CDT(outer_line));

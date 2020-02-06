@@ -1,7 +1,7 @@
 #include "Svg.hpp"
 #include "pugixml/pugixml.hpp"
 
-class wp::SVG::Impl
+class trail::SVG::Impl
 {
 public:
 	pugi::xml_document doc;
@@ -19,15 +19,15 @@ public:
 	}
 };
 
-wp::SVG::SVG():
-	impl(new wp::SVG::Impl())
+trail::SVG::SVG():
+	impl(new trail::SVG::Impl())
 {}
 
-std::ostream& wp::operator<<(std::ostream& out,const wp::SVG& svg)
+std::ostream& trail::operator<<(std::ostream& out,const trail::SVG& svg)
 {
 	return svg.impl->save(out);
 }
-std::istream& wp::operator>>(std::istream& inp,wp::SVG& svg)
+std::istream& trail::operator>>(std::istream& inp,trail::SVG& svg)
 {
 	return svg.impl->load(inp);
 }

@@ -1,7 +1,7 @@
 #include "Shape.hpp"
 #include <algorithm>
 #include <iterator>
-using namespace wp;
+using namespace trail;
 
 
 static std::vector<Point> readPoints(std::istream& inp,size_t N)
@@ -24,7 +24,7 @@ static void writePoints(std::ostream& out,const std::vector<Point>& p)
 		out << p[i][0] << " " << p[i][1] << " ";
 	}
 }
-std::istream& wp::operator>>(std::istream& inp,Shape& shape)
+std::istream& trail::operator>>(std::istream& inp,Shape& shape)
 {
 	inp >> shape.id;
 	size_t num_verts;
@@ -40,7 +40,7 @@ std::istream& wp::operator>>(std::istream& inp,Shape& shape)
 	}
 	return inp;
 }
-std::ostream& wp::operator<<(std::ostream& out,const Shape& shape)
+std::ostream& trail::operator<<(std::ostream& out,const Shape& shape)
 {
 	out << shape.id << " ";
 	writePoints(out,shape.outerline);

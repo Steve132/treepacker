@@ -7,7 +7,7 @@
 
 int main(int argc,char** argv)
 {
-	wp::Shape input;
+	trail::Shape input;
 
 	std::ifstream inf("../../../data/square.shape");
 	inf >> input;
@@ -26,7 +26,7 @@ int main(int argc,char** argv)
 	std::vector<balltree<wp::Triangle,2,float>::ball> all_balls;
 	for(size_t i=0;i<tris.size();i++)
 	{
-		wp::Point position=(tris[i][0]+tris[i][1]+tris[i][2])/3.0;
+		trail::Point position=(tris[i][0]+tris[i][1]+tris[i][2])/3.0;
 		std::array<double,3> distances={
 			(tris[i][0]-position).norm(),
 			(tris[i][1]-position).norm(),
@@ -46,15 +46,15 @@ int main(int argc,char** argv)
 	
 	typename balltree<wp::Triangle,2,float>::ball test;
 	
-	test.position=wp::Point(1.15,.5);
+	test.position=trail::Point(1.15,.5);
 	test.radius=0.1;
 	test.leaf=wp::Triangle{
-		test.position+wp::Point(0.0,1.0)*test.radius,
-		test.position+wp::Point(0.86602540378,-0.5)*test.radius,
-		test.position+wp::Point(-0.86602540378,-0.5)*test.radius
+		test.position+trail::Point(0.0,1.0)*test.radius,
+		test.position+trail::Point(0.86602540378,-0.5)*test.radius,
+		test.position+trail::Point(-0.86602540378,-0.5)*test.radius
 	};
 	
-	std::cout << "Intersected: " << balltree.intersect(test,wp::intersect);
+	std::cout << "Intersected: " << balltree.intersect(test,wp::triangle_intersect);
 	
 	return 0;
 }

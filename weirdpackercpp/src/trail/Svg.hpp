@@ -5,7 +5,7 @@
 #include<iostream>
 #include "Shape.hpp"
 
-namespace wp
+namespace trail
 {
 class SVG
 {
@@ -18,7 +18,7 @@ public:
 	friend std::ostream& operator<<(std::ostream&,const SVG&);
 	friend std::istream& operator>>(std::istream&,SVG&);
 
-	std::vector<wp::Shape> getAllShapes() const;
+	std::vector<trail::Shape> getAllShapes() const;
 };
 
 std::ostream& operator<<(std::ostream&,const SVG&);

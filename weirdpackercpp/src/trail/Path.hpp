@@ -4,9 +4,9 @@
 #include "Shape.hpp"
 #include<iostream>
 
-namespace wp
+namespace trail
 {
-	wp::Shape path2shape(std::istream& inp,const std::string& name,double points_per_unit);
+	trail::Shape path2shape(std::istream& inp,const std::string& name,double points_per_unit);
 }
 
 #endif

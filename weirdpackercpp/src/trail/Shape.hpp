@@ -6,7 +6,7 @@
 #include<array>
 #include<iostream>
 
-namespace wp
+namespace trail
 {
 
 typedef Eigen::Vector2f Point;

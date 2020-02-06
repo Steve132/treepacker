@@ -6,14 +6,14 @@
 namespace wp
 {
 
-typedef std::array<Point,3> Triangle;
-std::vector<Triangle> triangulate(const Shape& shape);
+typedef std::array<trail::Point,3> Triangle;
+std::vector<Triangle> triangulate(const trail::Shape& shape);
 
 class TriangulatedShape
 {
 public:
 	std::vector<Triangle> triangles;
-	TriangulatedShape(const Shape& sh);
+	TriangulatedShape(const trail::Shape& sh);
 	float outer_area;
 	std::vector<float> holes_area;
 	
@@ -54,7 +54,7 @@ inline bool triangleIntersect(const Triangle& t0,const Triangle& t1)
 	!(crossIntersect(t0,t1) || crossIntersect(t1,t0));
 }
 }
-inline bool intersect(const Triangle& t1,const Triangle& t2)
+inline bool triangle_intersect(const Triangle& t1,const Triangle& t2)
 {
 		return triangleIntersect(t1,t2);
 }

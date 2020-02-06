@@ -282,9 +282,9 @@ std::ostream& operator<<(std::ostream& out,const PathCommand& cmd)
 	return out;
 }
 
-namespace wp
+namespace trail
 {
-wp::Shape path2shape(std::istream& inp,const std::string& name,double points_per_unit)
+trail::Shape path2shape(std::istream& inp,const std::string& name,double points_per_unit)
 {
 	auto CommandIterBegin=std::istream_iterator<PathCommand>(inp);
 	auto CommandIterEnd=std::istream_iterator<PathCommand>();
@@ -296,7 +296,7 @@ wp::Shape path2shape(std::istream& inp,const std::string& name,double points_per
 		}
 	);
 	sc.endSubpath();
-	wp::Shape sp;
+	trail::Shape sp;
 	sp.id=name;
 	sp.outerline=sc.subpaths[0].segments;
 	if(sc.subpaths.size())
