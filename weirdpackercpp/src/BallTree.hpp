@@ -67,7 +67,7 @@ public:
 	}
 	
 	template<class ClientIntersectFunc>
-	bool intersect_client(ClientIntersectFunc client_intersect_func,size_t root=0) const
+	bool intersect_callable(ClientIntersectFunc client_intersect_func,size_t root=0) const
 	{
 		while(root < allnodes.size())
 		{
@@ -82,14 +82,23 @@ public:
 	}
 	
 	template<class LeafBallType,class LeafIntersectFunc>
-	bool intersect(const LeafBallType& b,LeafIntersectFunc leaf_intersect,size_t root=0)
+	bool intersect(const LeafBallType& b,LeafIntersectFunc leaf_intersect,size_t root=0) const
 	{
 		auto client_func=[&b,&leaf_intersect](const ball& other)
 		{
 			if(!(b.num_children || other.num_children)) return b.intersect(other);
 			return leaf_intersect(b.leaf,other.leaf);
 		};
-		return intersect_client<decltype(client_func)>(client_func,root);
+		return intersect_callable(client_func,root);
+	}
+	template<class LeafBallTreeType,class LeafIntersectFunc>
+	bool intersect_balltree(const LeafBallTreeType& b,LeafIntersectFunc leaf_intersect,size_t root=0) const
+	{
+		auto client_func=[&b,&leaf_intersect](const ball& other)
+		{
+			return b.intersect(other,leaf_intersect);
+		};
+		return intersect_callable(client_func,root);
 	}
 };
 
