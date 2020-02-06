@@ -4,8 +4,11 @@ add_subdirectory(trail)
 add_library(weirdpacker
 	BallTree.cpp
 	BallTree.hpp
-	Triangulate.cpp
-	Triangulate.hpp
+	Triangle.cpp
+	Triangle.hpp
+	Triangle.inl
+	Mesh.cpp
+	Mesh.hpp
 )
 
 set_target_properties(weirdpacker PROPERTIES CXX_STANDARD 11)

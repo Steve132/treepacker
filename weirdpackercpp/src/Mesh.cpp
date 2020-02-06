@@ -1,7 +1,8 @@
-#include "Triangulate.hpp"
+#include "Mesh.hpp"
 #include "poly2tri/poly2tri.h"
 #include<memory>
 #include<algorithm>
+#include<numeric>
 
 
 static std::vector<p2t::Point*> polyline_convert(const std::vector<trail::Point>& l)
@@ -29,7 +30,7 @@ static std::vector<wp::Triangle> triangle_backconvert(const std::vector<p2t::Tri
 	{
 		p2t::Triangle& tiref=*tref[i];
 		std::array<const p2t::Point*,3> points{tiref.GetPoint(0),tiref.GetPoint(1),tiref.GetPoint(2)};
-
+		
 		wp::Triangle tri{
 			trail::Point{points[0]->x,points[0]->y},
 			trail::Point{points[1]->x,points[1]->y},
@@ -47,7 +48,7 @@ static void polyline_delete(std::vector<p2t::Point*>& pref)
 	}
 	pref.clear();
 }
-std::vector<wp::Triangle> wp::triangulate(const trail::Shape& shape)
+std::vector<wp::Triangle> wp::Mesh::triangulate(const trail::Shape& shape)
 {
 	std::vector<p2t::Point*> outer_line=polyline_convert(shape.outerline);
 	std::shared_ptr<p2t::CDT> pcdt(new p2t::CDT(outer_line));
@@ -64,3 +65,20 @@ std::vector<wp::Triangle> wp::triangulate(const trail::Shape& shape)
 	polyline_delete(outer_line);
 	return output;
 }
+
+
+wp::Mesh::Mesh(const std::vector<wp::Triangle>& sh):
+triangles(sh)
+{
+	if(triangles.size())
+	{
+		bounding_box=triangles[0].bounds();
+		for(const Triangle& tri : triangles)
+		{
+			auto bb=tri.bounds();
+			bounding_box=bounding_box.merged(bb);
+			area+=tri.area();
+		}
+	}
+}
+
