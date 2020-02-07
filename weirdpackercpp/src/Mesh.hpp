@@ -18,6 +18,7 @@ public:
 	Eigen::AlignedBox2f bounding_box;
 	
 	static Mesh transform(const Eigen::Matrix<float,2,3>& Rt,const Mesh& trishape);
+	void transform_in_place(const Eigen::Matrix<float,2,3>& Rt);
 	static std::vector<Triangle> triangulate(const trail::Shape& shape);
 };
 }

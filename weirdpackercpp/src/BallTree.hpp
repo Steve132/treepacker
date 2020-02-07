@@ -47,9 +47,6 @@ public:
 	
 	template<class LeafBallType,class LeafIntersectFunc>
 	bool intersect(const LeafBallType& b,LeafIntersectFunc leaf_intersect,size_t root=0) const;
-	
-	template<class LeafBallTreeType,class LeafIntersectFunc>
-	bool intersect_balltree(const LeafBallTreeType& b,LeafIntersectFunc leaf_intersect,size_t root=0) const;
 };
 
 

@@ -4,6 +4,19 @@
 #include "BallTree.hpp"
 #include<fstream>
 #include<thread>
+#include "Renderer.hpp"
+
+void printTriangles(const std::vector<wp::Triangle>& tris)
+{
+	for(size_t i=0;i<tris.size();i++)
+	{
+		for(size_t d=0;d<3;d++)
+		{
+			std::cout << "(" << tris[i].p[d][0] << ","  << tris[i].p[d][1] << ")";
+		}
+		std::cout << std::endl;
+	}	
+}
 
 int main(int argc,char** argv)
 {
@@ -14,14 +27,7 @@ int main(int argc,char** argv)
 	
 	std::vector<wp::Triangle> tris=wp::Mesh::triangulate(input);
 	
-	for(size_t i=0;i<tris.size();i++)
-	{
-		for(size_t d=0;d<3;d++)
-		{
-			std::cout << "(" << tris[i].p[d][0] << ","  << tris[i].p[d][1] << ")";
-		}
-		std::cout << std::endl;
-	}
+	printTriangles(tris);
 	
 	std::vector<balltree<wp::Triangle,2,float>::ball> all_balls;
 	for(size_t i=0;i<tris.size();i++)
@@ -54,7 +60,26 @@ int main(int argc,char** argv)
 		test.position+trail::Point(-0.86602540378,-0.5)*test.radius
 	};
 	
-	std::cout << "Intersected: " << balltree.intersect(test,wp::Triangle::intersect);
+	wp::Mesh msh(tris);
+	Eigen::Matrix<float,2,3> Rt;
+	Rt << Eigen::Matrix2f::Identity(),-msh.bounding_box.min();
+	Rt *= (1.0f/msh.bounding_box.sizes().maxCoeff());
+	std::cout << Rt << std::endl;
+	msh.transform_in_place(Rt);
+	
+	printTriangles(msh.triangles);
+	
+	wp::Renderer r({800,600},6.0f);
+	r.clear({0x00,0x00,0x40});
+	while(r.isOpen())
+	{
+		for(size_t i=0;i<msh.triangles.size();i++)
+		{
+			r.draw(msh.triangles[i],{0xFF,0xFF,0x00});
+		}
+		r.update();
+	}
+	//std::cout << "Intersected: " << balltree.intersect(test,wp::Triangle::intersect);
 	
 	return 0;
 }

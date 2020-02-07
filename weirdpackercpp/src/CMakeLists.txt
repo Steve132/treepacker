@@ -9,13 +9,17 @@ add_library(weirdpacker
 	Triangle.inl
 	Mesh.cpp
 	Mesh.hpp
+	Renderer.cpp
+	Renderer.hpp
 )
+
+
 
 set_target_properties(weirdpacker PROPERTIES CXX_STANDARD 11)
 target_include_directories(weirdpacker PUBLIC trail)
 
 target_include_directories(weirdpacker PRIVATE deps)
-target_link_libraries(weirdpacker trail poly2tri)
+target_link_libraries(weirdpacker trail poly2tri X11)
 
 add_executable(test_shape
 	test_shape.cpp)

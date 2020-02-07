@@ -17,7 +17,6 @@ public:
 	
 	static bool intersect(const Triangle& a,const Triangle& b);
 	static Triangle transform(const Eigen::Matrix<float,2,3>& Rt,const Triangle& tri);
-	
 };
 
 

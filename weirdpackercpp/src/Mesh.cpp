@@ -81,22 +81,25 @@ triangles(sh)
 		}
 	}
 }
-
+void wp::Mesh::transform_in_place(const Eigen::Matrix<float,2,3>& Rt)
+{
+	if(triangles.size())
+	{
+		triangles[0]=Triangle::transform(Rt,triangles[0]);
+		bounding_box=triangles[0].bounds();
+		for(size_t i=1;i<triangles.size();i++)
+		{
+			Triangle& ntri=triangles[i];
+			bounding_box.extend(ntri.p[0]);
+			bounding_box.extend(ntri.p[1]);
+			bounding_box.extend(ntri.p[2]);
+		}
+	}
+}
 wp::Mesh wp::Mesh::transform(const Eigen::Matrix<float, 2, 3>& Rt, const wp::Mesh& trishape)
 {
 	wp::Mesh newmesh(trishape);
-	if(newmesh.triangles.size())
-	{
-		newmesh.triangles[0]=Triangle::transform(Rt,newmesh.triangles[0]);
-		newmesh.bounding_box=newmesh.triangles[0].bounds();
-		for(size_t i=1;i<newmesh.triangles.size();i++)
-		{
-			Triangle& ntri=newmesh.triangles[i];
-			newmesh.bounding_box.extend(ntri.p[0]);
-			newmesh.bounding_box.extend(ntri.p[1]);
-			newmesh.bounding_box.extend(ntri.p[2]);
-		}
-	}
+	newmesh.transform_in_place(Rt);
 	return newmesh;
 }
 
