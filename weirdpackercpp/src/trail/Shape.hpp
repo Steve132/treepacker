@@ -21,6 +21,8 @@ public:
 
 	friend std::ostream& operator<<(std::ostream&,const Shape&);
 	friend std::istream& operator>>(std::istream&,Shape&);
+	
+	void cleanup();
 };
 std::ostream& operator<<(std::ostream&,const Shape&);
 std::istream& operator>>(std::istream&,Shape&);

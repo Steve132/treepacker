@@ -48,8 +48,11 @@ static void polyline_delete(std::vector<p2t::Point*>& pref)
 	}
 	pref.clear();
 }
-std::vector<wp::Triangle> wp::Mesh::triangulate(const trail::Shape& shape)
+
+std::vector<wp::Triangle> wp::Mesh::triangulate(const trail::Shape& shaperef)
 {
+	trail::Shape shape=shaperef;
+	shape.cleanup();
 	std::vector<p2t::Point*> outer_line=polyline_convert(shape.outerline);
 	std::shared_ptr<p2t::CDT> pcdt(new p2t::CDT(outer_line));
 	std::vector<std::vector<p2t::Point*>> hole_lines(shape.holes.size());
@@ -90,6 +93,7 @@ void wp::Mesh::transform_in_place(const Eigen::Matrix<float,2,3>& Rt)
 		for(size_t i=1;i<triangles.size();i++)
 		{
 			Triangle& ntri=triangles[i];
+			ntri=Triangle::transform(Rt,triangles[i]);
 			bounding_box.extend(ntri.p[0]);
 			bounding_box.extend(ntri.p[1]);
 			bounding_box.extend(ntri.p[2]);

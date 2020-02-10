@@ -36,11 +36,15 @@ public:
 		bool intersect(const LeafBallType2& other,LeafIntersectFunc leaf_intersect) const;
 	};
 private:
-	static std::forward_list<ball> build_balltree_dfs(ball* bbegin,ball* bend);
+	template<class MakeParentFunc>
+	static std::forward_list<ball> build_balltree_dfs(ball* bbegin,ball* bend,MakeParentFunc makeparent);
 public:
 	std::vector<ball> allnodes;
 	
 	balltree(ball* bbegin,ball* bend);
+	
+	template<class MakeParentFunc>
+	balltree(ball* bbegin,ball* bend,MakeParentFunc makeparent);
 	
 	template<class ClientIntersectFunc>
 	bool intersect_callable(ClientIntersectFunc client_intersect_func,size_t root=0) const;

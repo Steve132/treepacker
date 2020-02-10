@@ -51,3 +51,19 @@ std::ostream& trail::operator<<(std::ostream& out,const Shape& shape)
 	}
 	return out;
 }
+static void cleanup_polyline(std::vector<trail::Point>& plist)
+{
+	while((plist.back()-plist.front()).norm()<0.00001 && plist.size() > 2)
+	{
+		plist.pop_back();
+	}
+}
+
+void trail::Shape::cleanup()
+{
+	cleanup_polyline(outerline);
+	for(size_t i=0;i<holes.size();i++)
+	{
+		cleanup_polyline(holes[i]);
+	}
+}

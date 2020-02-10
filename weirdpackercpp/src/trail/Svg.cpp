@@ -35,20 +35,24 @@ public:
 		 */
 		std::cout << node.name() << std::endl;
 		std::string tag=node.name();
-		
+		std::ostringstream pout;
 		if(tag=="rect")
 		{
-			
+//			Eigen::Vector2d ul(node.attribute("x").value(),node.attribute("y").value());
+//			Eigen::Vector2d wh(node.attribute("width").value(),node.attribute("h").value());
+//			pout << "M " << ul.x() << "," << ul.y() << " W " << wh.x() << " H " << wh.y() << " W " << -wh.x() << " z";
 		}
 		else if(tag=="circle")
 		{
-				
+				//this requires a non-path argument (arcs don't count)
 		}
 		else if(tag=="ellipse")
 		{
+			//same as circle
 		}
 		else if(tag=="polygon")
 		{
+			//pout << 
 		}
 		else if(tag=="path")
 		{
