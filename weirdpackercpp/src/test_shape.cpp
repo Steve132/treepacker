@@ -72,7 +72,7 @@ typename balltree<wp::Triangle,2,float>::ball getTestTBall()
 
 int main(int argc,char** argv)
 {
-	std::ifstream inpf("../../../data/drawing.svg");
+	std::ifstream inpf("../../../data/drawing2.svg");
 	trail::SVG drawing;
 	inpf >> drawing;
 	std::vector<trail::Shape> shapes=drawing.getAllShapes();
@@ -93,14 +93,17 @@ int main(int argc,char** argv)
 	std::cout << Rt << std::endl;
 	msh.transform_in_place(Rt); //TODO: using this makes the intersection checking O(n)!  MUST add transform to intersect!
 	balltree<wp::Triangle,2,float> btree=build_btree(msh.triangles);
-	wp::Renderer r({800,600},3.0f);
-	r.clear({0x00,0x00,0x40});
 	
-	
-	typename balltree<wp::Triangle,2,float>::ball testball=getTestTBall();
+	std::vector<wp::Triangle> tris2=wp::Mesh::triangulate(shapes[1]);
+	wp::Mesh msh2(tris2);
+	msh2.transform_in_place(Rt);
+	balltree<wp::Triangle,2,float> btree2=build_btree(msh2.triangles);
+
+	//typename balltree<wp::Triangle,2,float>::ball testball=getTestTBall();
 	
 
-	
+	wp::Renderer r({800,600},3.0f);
+	r.clear({0x00,0x00,0x40});	
 	while(r.isOpen())
 	{
 		r.clear({0x00,0x00,0x40});
@@ -113,15 +116,13 @@ int main(int argc,char** argv)
 		
 		Eigen::Matrix<float,2,3> Rt2=Eigen::Matrix<float,2,3>::Identity();
 		Rt2.col(2)=r.getMousePosition();
-		typename balltree<wp::Triangle,2,float>::ball tb2=testball;
-		tb2.transform_in_place(balltransform<2,float>(Rt2.col(2)));
-		tb2.leaf=wp::Triangle::transform(Rt2,tb2.leaf);
-		std::cout << Rt2 << std::endl;
-		r.draw(tb2,{0x00,0x00,0xFF},true);
 		
-		bool inter=btree.intersect(tb2,wp::Triangle::intersect);
-		uint8_t cv=inter ? 0xFF : 0x00;
-		r.draw(tb2.leaf,{cv,~cv,0x00},true);
+		std::cout << Rt2 << std::endl;
+		r.draw(msh2,{0x00,0x00,0xFF},true);
+		
+		//bool inter=btree.intersect(tb2,wp::Triangle::intersect);
+		//uint8_t cv=inter ? 0xFF : 0x00;
+		//r.draw(tb2.leaf,{cv,~cv,0x00},true);
 		r.update();
 	}
 	

@@ -128,6 +128,11 @@ void SegmentsContext::executePathCommand(const PathCommand& pc)
 		{
 			Eigen::Vector2f dst(pc.command_args[0],pc.command_args[1]);
 			absMoveTo(relorabs(cursor,dst,iL));
+			for(size_t i=1;i<pc.command_args.size()/2;i++)
+			{
+				Eigen::Vector2f dst2(pc.command_args[2*i],pc.command_args[2*i+1]);
+				absLineTo(relorabs(cursor,dst2,iL));
+			}
 			break;
 		}
 		case 'z':
@@ -160,9 +165,21 @@ void SegmentsContext::executePathCommand(const PathCommand& pc)
 		{
 			for(size_t i=0;i<pc.command_args.size();i++)
 			{
-				Eigen::Vector2f dst(0.0,pc.command_args[i]);
-				if(isH) std::swap(dst.x(),dst.y());
-				absLineTo(relorabs(cursor,dst,iL));
+				Eigen::Vector2f dst(0.0f,pc.command_args[i]);
+				if(isH) 
+				{
+					std::swap(dst.x(),dst.y());
+				}
+				dst=relorabs(cursor,dst,iL);
+				if(isH)
+				{
+					dst.y()=cursor.y();
+				}
+				else
+				{
+					dst.x()=cursor.x();
+				}
+				absLineTo(dst);
 			}
 			break;
 		}
