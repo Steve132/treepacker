@@ -18,6 +18,26 @@ void printTriangles(const std::vector<wp::Triangle>& tris)
 		std::cout << std::endl;
 	}	
 }
+
+typename balltree<wp::Triangle,2,float>::ball aabb_parentfunc(
+	const typename balltree<wp::Triangle,2,float>::ball& lref,
+	const typename balltree<wp::Triangle,2,float>::ball& rref,
+	const typename balltree<wp::Triangle,2,float>::ball* bb,
+	const typename balltree<wp::Triangle,2,float>::ball* be
+)
+{
+	Eigen::AlignedBox2f bbox=bb[0].leaf.bounds();
+	size_t n=be-bb;
+	for(size_t i=1;i<n;i++)
+	{
+		bbox.extend(bb[i].leaf.bounds());
+	}
+	
+	typename balltree<wp::Triangle,2,float>::ball parent(lref,rref);
+	parent.position=(bbox.max()+bbox.min())/2.0f;
+	parent.radius=(bbox.max()-bbox.min()).norm()/2.0f;
+	return parent;
+}
 balltree<wp::Triangle,2,float> build_btree(const std::vector<wp::Triangle>& tris)
 {
 	std::vector<balltree<wp::Triangle,2,float>::ball> all_balls;
@@ -27,9 +47,28 @@ balltree<wp::Triangle,2,float> build_btree(const std::vector<wp::Triangle>& tris
 		all_balls.emplace_back(tris[i],Eigen::Vector2f(ecirc.x(),ecirc.y()),ecirc.z());
 	}
 	
-	balltree<wp::Triangle,2,float> bt(all_balls.data(),all_balls.data()+all_balls.size());
+	balltree<wp::Triangle,2,float> bt(all_balls.data(),all_balls.data()+all_balls.size(),aabb_parentfunc);
 	return bt;
 }
+
+
+typename balltree<wp::Triangle,2,float>::ball getTestTBall()
+{
+
+	typename balltree<wp::Triangle,2,float>::ball test;
+	
+	test.radius=0.1;
+	test.leaf=wp::Triangle{
+		trail::Point(0.0,1.0)*test.radius,
+		trail::Point(0.86602540378,-0.5)*test.radius,
+		trail::Point(-0.86602540378,-0.5)*test.radius
+	};
+	Eigen::Vector3f ecirc=test.leaf.smallest_enclosing_circle();
+	test.position=Eigen::Vector2f(ecirc.x(),ecirc.y());
+	test.radius=ecirc.z();
+	return test;
+}
+
 
 int main(int argc,char** argv)
 {
@@ -56,56 +95,36 @@ int main(int argc,char** argv)
 	balltree<wp::Triangle,2,float> btree=build_btree(msh.triangles);
 	wp::Renderer r({800,600},3.0f);
 	r.clear({0x00,0x00,0x40});
+	
+	
+	typename balltree<wp::Triangle,2,float>::ball testball=getTestTBall();
+	
+
+	
 	while(r.isOpen())
 	{
+		r.clear({0x00,0x00,0x40});
 		//r.draw(msh,{0x40,0x40,0x00});
 		r.draw(msh,{0xFF,0xFF,0x00},true);
-		
 		for(size_t i=0;i<btree.allnodes.size();i++)
 		{
-			if(btree.allnodes[i].num_children<=2)
-			{
-				r.draw(btree.allnodes[i],{0xFF,0x00,0x00},true);
-			}
+			r.draw(btree.allnodes[i],{0x40,0x00,0x00},true);
 		}
+		
+		Eigen::Matrix<float,2,3> Rt2=Eigen::Matrix<float,2,3>::Identity();
+		Rt2.col(2)=r.getMousePosition();
+		typename balltree<wp::Triangle,2,float>::ball tb2=testball;
+		tb2.transform_in_place(balltransform<2,float>(Rt2.col(2)));
+		tb2.leaf=wp::Triangle::transform(Rt2,tb2.leaf);
+		std::cout << Rt2 << std::endl;
+		r.draw(tb2,{0x00,0x00,0xFF},true);
+		
+		bool inter=btree.intersect(tb2,wp::Triangle::intersect);
+		uint8_t cv=inter ? 0xFF : 0x00;
+		r.draw(tb2.leaf,{cv,~cv,0x00},true);
 		r.update();
 	}
 	
 	return 0;
 }
 
-int oldmain(int argc,char** argv)
-{
-	trail::Shape input;
-
-	std::ifstream inf("../../../data/square.shape");
-	inf >> input;
-	
-	std::vector<wp::Triangle> tris=wp::Mesh::triangulate(input);
-	
-	printTriangles(tris);
-	
-	
-	balltree<wp::Triangle,2,float> balltree=build_btree(tris);
-	
-	for(size_t i=0;i<balltree.allnodes.size();i++)
-	{
-		const auto& thisball=balltree.allnodes[i];
-		std::cout << i << ":" << thisball.position.transpose() << " : " << thisball.radius << std::endl;
-	}
-	
-	typename balltree<wp::Triangle,2,float>::ball test;
-	
-	test.position=trail::Point(1.15,.5);
-	test.radius=0.1;
-	test.leaf=wp::Triangle{
-		test.position+trail::Point(0.0,1.0)*test.radius,
-		test.position+trail::Point(0.86602540378,-0.5)*test.radius,
-		test.position+trail::Point(-0.86602540378,-0.5)*test.radius
-	};
-	
-	
-	//std::cout << "Intersected: " << balltree.intersect(test,wp::Triangle::intersect);
-	
-	return 0;
-}

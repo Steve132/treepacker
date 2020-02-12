@@ -24,7 +24,6 @@ int main(int argc,char** argv)
 		shapes[i].cleanup();
 		std::cout << shapes[i] << std::endl;
 	}
-	
 	wp::Mesh::triangulate(shapes[0]);
 	
 	

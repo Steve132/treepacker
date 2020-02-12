@@ -65,13 +65,9 @@ inline Eigen::AlignedBox2f Triangle::bounds() const
 
 inline Triangle Triangle::transform(const Eigen::Matrix<float,2,3>& Rt,const Triangle& tri)
 {
-	Eigen::Matrix<float,3,3> verts;
-	verts << 
-			tri.p[0],tri.p[1],tri.p[2],
-			1.0,     1.0,     1.0;
-			
-	auto result=Rt*verts;
-	return Triangle{result.leftCols<1>(),result.col(1),result.rightCols<1>()};
+	auto R=Rt.leftCols<2>();
+	auto t=Rt.rightCols<1>();
+	return Triangle{R*tri.p[0]+t,R*tri.p[1]+t,R*tri.p[2]+t};
 }
 
 }

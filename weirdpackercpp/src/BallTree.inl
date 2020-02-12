@@ -21,6 +21,14 @@ ballbase<D,REAL>::ballbase(const ballbase& lball,const ballbase& rball):
 	Eigen::Matrix<REAL,D,1> upper=rball.position+rball.radius*childaxis;
 	radius=(upper-lower).norm()*static_cast<REAL>(0.5);
 	position=(upper+lower)*static_cast<REAL>(0.5);
+}	
+template<unsigned int D,class REAL>
+inline 
+void ballbase<D,REAL>::transform_in_place(const balltransform<D,REAL>& Rt)
+{
+	position=Rt.scale*Rt.rotation*position;
+	position+=Rt.offset;
+	radius*=Rt.scale;
 }
 template<unsigned int D,class REAL>
 inline 
@@ -35,15 +43,11 @@ template<class LeafBallType2,class LeafIntersectFunc>
 inline
 bool balltree<LeafType,D,REAL>::ball::intersect(const LeafBallType2& other,LeafIntersectFunc leaf_intersect) const
 {
-	if(ballbase<D,REAL>::intersect(other))
+	if(ballbase<D,REAL>::num_children || other.num_children)
 	{
-		if(ballbase<D,REAL>::num_children || other.num_children)
-		{
-			return true;
-		}
-		return leaf_intersect(leaf,other.leaf);
+		return ballbase<D,REAL>::intersect(other);
 	}
-	return false;
+	return leaf_intersect(leaf,other.leaf);
 }
 
 namespace 

@@ -9,6 +9,27 @@
 #include<type_traits>
 
 template<unsigned int D,class REAL=double>
+struct balltransform
+{
+	Eigen::Matrix<REAL,D,D> rotation;
+	Eigen::Matrix<REAL,D,1> offset;
+	REAL scale;
+	balltransform(const Eigen::Matrix<REAL,D,1>& tT=Eigen::Matrix<REAL,D,1>::Zero(),
+				  const Eigen::Matrix<REAL,D,D>& tR=Eigen::Matrix<REAL,D,D>::Identity(),
+				  const REAL& tS=1.0):
+		rotation(tR),
+		offset(tT),
+		scale(tS)
+	{}
+	/*balltransform(const Eigen::Matrix<REAL,D,D+1>& a)
+	{
+		rotation=a.leftCols(D);
+		offset=a.rightCols(1);
+		scale=rotation.norm();
+	}*/
+};
+
+template<unsigned int D,class REAL=double>
 struct ballbase
 {
 	Eigen::Matrix<REAL,D,1> position;
@@ -18,6 +39,7 @@ struct ballbase
 	ballbase(const Eigen::Matrix<REAL,D,1>& pos=Eigen::Matrix<REAL,D,1>::Zero(),REAL trad=0.0);
 	ballbase(const ballbase& lball,const ballbase& rball);
 	bool intersect(const ballbase& b) const;
+	void transform_in_place(const balltransform<D,REAL>& Rt);
 };
 
 template<class LeafType,unsigned int D,class REAL=double>
