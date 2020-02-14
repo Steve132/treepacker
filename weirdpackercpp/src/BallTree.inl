@@ -16,7 +16,15 @@ ballbase<D,REAL>::ballbase(const ballbase& lball,const ballbase& rball):
 	Eigen::Matrix<REAL,D,1> pos_mean,childaxis;
 	childaxis=rball.position-lball.position;
 	REAL mg=childaxis.norm();
-	childaxis/=mg;
+	if(mg <= 0.0000001)
+	{
+		childaxis=Eigen::Matrix<REAL,D,1>::Zero();
+		childaxis[0]=static_cast<REAL>(1.0);
+	}
+	else
+	{
+		childaxis/=mg;
+	}
 	Eigen::Matrix<REAL,D,1> lower=lball.position-lball.radius*childaxis;
 	Eigen::Matrix<REAL,D,1> upper=rball.position+rball.radius*childaxis;
 	radius=(upper-lower).norm()*static_cast<REAL>(0.5);
@@ -47,6 +55,7 @@ bool balltree<LeafType,D,REAL>::ball::intersect(const LeafBallType2& other,LeafI
 	{
 		return ballbase<D,REAL>::intersect(other);
 	}
+	
 	return leaf_intersect(leaf,other.leaf);
 }
 
@@ -156,7 +165,10 @@ inline bool balltree<LeafType,D,REAL>::intersect_callable(ClientIntersectFunc cl
 		const ball& thisnode=allnodes[root];
 		if(client_intersect_func(thisnode))
 		{
-			if(thisnode.num_children==0) return true;
+			if(thisnode.num_children==0) 
+			{
+				return true;
+			}
 		}
 		else
 		{
@@ -169,9 +181,10 @@ template<class LeafType,unsigned int D,class REAL>
 template<class LeafBallType,class LeafIntersectFunc>
 inline bool balltree<LeafType,D,REAL>::intersect(const LeafBallType& b,LeafIntersectFunc leaf_intersect,size_t root) const
 {
+	
 	auto client_func=[&b,&leaf_intersect](const ball& other)
 	{
-		return b.intersect(other,leaf_intersect);
+		return other.intersect(b,leaf_intersect);
 	};
 	return intersect_callable(client_func,root);
 }

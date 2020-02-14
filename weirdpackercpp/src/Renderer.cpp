@@ -44,6 +44,13 @@ public:
 		}
 	}
 	
+	void draw(const Eigen::AlignedBox2f& box,const Color& color,bool outline)
+	{
+		if(outline)
+			buf.draw_rectangle(int(box.min().x()*scale),int(box.min().y()*scale),int(box.max().x()*scale),int(box.max().y()*scale),&color[0],1.0f,~0U);
+		else
+			buf.draw_rectangle(int(box.min().x()*scale),int(box.min().y()*scale),int(box.max().x()*scale),int(box.max().y()*scale),&color[0],1.0f);
+	}
 	
 	
 	
@@ -59,10 +66,10 @@ public:
 		return Eigen::Vector2f(disp.mouse_x(),disp.mouse_y())/scale;
 	}
 	
-	void update()
+	void update(int n=0)
 	{
 		disp=buf;
-		disp.wait();
+		disp.wait(n);
 	}
 	bool isOpen()
 	{
@@ -85,6 +92,11 @@ void Renderer::draw(const ballbase<2,float>& circle,const Color& color,bool outl
 {
 	impl->draw(circle,color,outline);
 }
+void Renderer::draw(const Eigen::AlignedBox2f& box,const Color& color,bool outline)
+{
+	impl->draw(box,color,outline);
+}
+
 void Renderer::draw(const Mesh& msh,const Color& color,bool outline)
 {
 	impl->draw(msh,color,outline);
@@ -97,9 +109,9 @@ void Renderer::clear(const Color& clearcolor)
 {
 	impl->clear(clearcolor);
 }
-void Renderer::update()
+void Renderer::update(int n)
 {
-	impl->update();
+	impl->update(n);
 }
 bool Renderer::isOpen()
 {

@@ -55,12 +55,12 @@ inline float Triangle::area() const
 }
 inline Eigen::AlignedBox2f Triangle::bounds() const
 {
-	//auto lower=p[0].array().min(p[1].array()).min(p[2].array());
-	//auto upper=p[0].array().max(p[1].array()).max(p[2].array());
-	//return Eigen::AlignedBox2f(lower,upper);
-	Eigen::AlignedBox2f bb(p[0],p[1]);
-	bb.extend(p[2]);
-	return bb;
+	auto lower=p[0].array().min(p[1].array()).min(p[2].array());
+	auto upper=p[0].array().max(p[1].array()).max(p[2].array());
+	return Eigen::AlignedBox2f(lower,upper);
+	//Eigen::AlignedBox2f bb(p[0],p[1]);
+	
+	//return bb;
 }
 
 inline Triangle Triangle::transform(const Eigen::Matrix<float,2,3>& Rt,const Triangle& tri)
