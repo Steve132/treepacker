@@ -132,9 +132,13 @@ inline std::forward_list<typename balltree<LeafType,D,REAL>::ball> balltree<Leaf
 	});
 	auto left_list=build_balltree_dfs(bbegin,bmid,makeparent);
 	auto right_list=build_balltree_dfs(bmid,bend,makeparent);
-	
-	ball newroot=makeparent(left_list.front(),right_list.front(),bbegin,bend);
+	bool swaplr=false;
+	ball newroot=makeparent(left_list.front(),right_list.front(),bbegin,bend,swaplr);
 
+	if(swaplr)
+	{
+		std::swap(right_list,left_list);
+	}
 	right_list.splice_after(right_list.before_begin(),left_list,left_list.before_begin(),left_list.end());
 	right_list.push_front(newroot);
 	return right_list;
@@ -149,7 +153,7 @@ inline balltree<LeafType,D,REAL>::balltree(ball* bbegin,ball* bend,MakeParentFun
 }
 template<class LeafType,unsigned int D,class REAL>
 inline balltree<LeafType,D,REAL>::balltree(ball* bbegin,ball* bend):
-	balltree(bbegin,bend,[](const ball& l,const ball& r,const ball* innerbb,const ball* innerbe)
+	balltree(bbegin,bend,[](const ball& l,const ball& r,const ball* innerbb,const ball* innerbe,bool&)
 	{
 		return ball(l,r);
 	})

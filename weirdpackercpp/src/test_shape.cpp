@@ -26,10 +26,12 @@ typename balltree2f::ball aabb_parentfunc(
 	const typename balltree2f::ball& lref,
 	const typename balltree2f::ball& rref,
 	const typename balltree2f::ball* bb,
-	const typename balltree2f::ball* be
+	const typename balltree2f::ball* be,
+	bool& swaplr
 )
 {
 	
+	swaplr=lref.position.x() > rref.position.x();
 	Eigen::AlignedBox2f bbox=bb[0].leaf.bounds();
 	size_t n=be-bb;
 	//std::cerr << "The N: " << n << std::endl;
@@ -39,11 +41,16 @@ typename balltree2f::ball aabb_parentfunc(
 		bbox.extend(bb[i].leaf.bounds());
 	//	std::cerr << bbox.min().transpose() << ":" << bbox.max().transpose() << std::endl;
 	}
-	if(n==14)
+	
+	typename balltree2f::ball parent;
+	if(swaplr)
 	{
-		std::cerr << "Start debugging here";
+		parent=balltree2f::ball(rref,lref);
 	}
-	typename balltree2f::ball parent(lref,rref);
+	else
+	{
+		parent=balltree2f::ball(lref,rref);
+	}
 	//std::cerr << "before:" << parent.position.transpose() << "," << parent.radius << std::endl;
 	
 	double newrad=(bbox.max()-bbox.min()).norm()/2.0f;
@@ -90,7 +97,7 @@ typename balltree2f::ball getTestTBall()
 
 int main(int argc,char** argv)
 {
-	std::ifstream inpf("../../../data/drawing2.svg");
+	std::ifstream inpf("../../../data/drawing2tri.svg");
 	trail::SVG drawing;
 	inpf >> drawing;
 	std::vector<trail::Shape> shapes=drawing.getAllShapes();
@@ -124,13 +131,9 @@ int main(int argc,char** argv)
 	wp::Renderer r({800,600},3.0f);
 	r.clear({0x00,0x00,0x40});	
 	
-	std::cout << "all nodes num children:" << std::endl;
-	for(int i = 0; i < btree.allnodes.size(); i++)
-	{
-		std::cout << btree.allnodes[i].num_children << ' ';
-	}
-	std::cout << std::endl;
-
+	std::cout << "Num Leaves: " << msh2.triangles.size() << std::endl;
+	std::cout << "Num Leaves: " << msh.triangles.size() << std::endl;
+	
 	while(r.isOpen())
 	{
 		r.clear({0x00,0x00,0x40});
@@ -157,18 +160,20 @@ int main(int argc,char** argv)
 			btree2t.allnodes[i].leaf = wp::Triangle::transform(Rt2, btree2t.allnodes[i].leaf);
 		}
 		
-		r.draw(btree2t.allnodes[1],{0x00,0x40,0x00},true);
-		
 		bool inter=false;
 		//inter=btree.intersect(btree2t.allnodes[0],wp::Triangle::intersect);
 		//inter=btree.intersect(btree2t.allnodes[1],wp::Triangle::intersect);
-		inter=btree.intersect_callable([&btree2t](const typename balltree2f::ball& thisnode1)
+		size_t num_intersections=0;
+		inter=btree.intersect_callable([&btree2t,&num_intersections](const typename balltree2f::ball& thisnode1)
 		{
-			return btree2t.intersect_callable([&thisnode1](const typename balltree2f::ball& thisnode2)
+			return btree2t.intersect_callable([&thisnode1,&num_intersections](const typename balltree2f::ball& thisnode2)
 			{
+				num_intersections++;
 				return thisnode1.intersect(thisnode2, wp::Triangle::intersect);
 			});
 		});
+		
+		std::cout << num_intersections << std::endl;
 		
 		
 		
