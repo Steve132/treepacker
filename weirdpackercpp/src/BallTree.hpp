@@ -7,27 +7,10 @@
 #include<vector>
 #include<forward_list>
 #include<type_traits>
+#include "EuclideanTransform.hpp"
 
 template<unsigned int D,class REAL=double>
-struct balltransform
-{
-	Eigen::Matrix<REAL,D,D> rotation;
-	Eigen::Matrix<REAL,D,1> offset;
-	REAL scale;
-	balltransform(const Eigen::Matrix<REAL,D,1>& tT=Eigen::Matrix<REAL,D,1>::Zero(),
-				  const Eigen::Matrix<REAL,D,D>& tR=Eigen::Matrix<REAL,D,D>::Identity(),
-				  const REAL& tS=1.0):
-		rotation(tR),
-		offset(tT),
-		scale(tS)
-	{}
-	/*balltransform(const Eigen::Matrix<REAL,D,D+1>& a)
-	{
-		rotation=a.leftCols(D);
-		offset=a.rightCols(1);
-		scale=rotation.norm();
-	}*/
-};
+using balltransform=EuclideanTransform<D,REAL>;
 
 template<unsigned int D,class REAL=double>
 struct ballbase
@@ -59,14 +42,14 @@ public:
 	};
 private:
 	template<class MakeParentFunc>
-	static std::forward_list<ball> build_balltree_dfs(ball* bbegin,ball* bend,MakeParentFunc makeparent);
+	static std::forward_list<ball> build_balltree_dfs(ball* bbegin,ball* bend,MakeParentFunc makeparent,size_t extra_leaf_size=0);
 public:
 	std::vector<ball> allnodes;
 	
 	balltree(ball* bbegin,ball* bend);
 	
 	template<class MakeParentFunc>
-	balltree(ball* bbegin,ball* bend,MakeParentFunc makeparent);
+	balltree(ball* bbegin,ball* bend,MakeParentFunc makeparent,size_t extra_leaf_size=0);
 	
 	template<class ClientIntersectFunc>
 	bool intersect_callable(ClientIntersectFunc client_intersect_func,size_t root=0) const;

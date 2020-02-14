@@ -17,7 +17,7 @@ public:
 	
 	static bool intersect(const Triangle& a,const Triangle& b);
 	static Triangle transform(const Eigen::Matrix<float,2,3>& Rt,const Triangle& tri);
-	
+	void transform_in_place(const Eigen::Matrix<float,2,3>& Rt);
 	Eigen::Vector3f smallest_enclosing_circle() const;
 	Eigen::Vector3f mean_enclosing_circle() const;
 };

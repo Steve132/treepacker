@@ -35,7 +35,7 @@ inline
 void ballbase<D,REAL>::transform_in_place(const balltransform<D,REAL>& Rt)
 {
 	position=Rt.scale*Rt.rotation*position;
-	position+=Rt.offset;
+	position+=Rt.translation;
 	radius*=Rt.scale;
 }
 template<unsigned int D,class REAL>
@@ -95,13 +95,14 @@ template<class LeafType,unsigned int D,class REAL>
 	{}
 template<class LeafType,unsigned int D,class REAL>
 template<class MakeParentFunc>
-inline std::forward_list<typename balltree<LeafType,D,REAL>::ball> balltree<LeafType,D,REAL>::build_balltree_dfs(ball* bbegin,ball* bend,MakeParentFunc makeparent)
+inline std::forward_list<typename balltree<LeafType,D,REAL>::ball> balltree<LeafType,D,REAL>::build_balltree_dfs(ball* bbegin,ball* bend,MakeParentFunc makeparent,size_t extra_leaf_size)
 {
 	size_t n=bend-bbegin;
-	if(n<=1)
+	extra_leaf_size=0;//TODO: this parameter doesn't work so disable it
+	if(n<=(extra_leaf_size+1))
 	{
 		std::forward_list<ball> lo;
-		if(n==1)
+		for(size_t k=0;k<(extra_leaf_size+1);k++)
 		{
 			lo.push_front(*bbegin);
 		}
@@ -130,8 +131,8 @@ inline std::forward_list<typename balltree<LeafType,D,REAL>::ball> balltree<Leaf
 	{
 		return a.temp_projector < b.temp_projector;
 	});
-	auto left_list=build_balltree_dfs(bbegin,bmid,makeparent);
-	auto right_list=build_balltree_dfs(bmid,bend,makeparent);
+	auto left_list=build_balltree_dfs(bbegin,bmid,makeparent,extra_leaf_size);
+	auto right_list=build_balltree_dfs(bmid,bend,makeparent,extra_leaf_size);
 	bool swaplr=false;
 	ball newroot=makeparent(left_list.front(),right_list.front(),bbegin,bend,swaplr);
 
@@ -146,9 +147,9 @@ inline std::forward_list<typename balltree<LeafType,D,REAL>::ball> balltree<Leaf
 
 template<class LeafType,unsigned int D,class REAL>
 template<class MakeParentFunc>
-inline balltree<LeafType,D,REAL>::balltree(ball* bbegin,ball* bend,MakeParentFunc makeparent)
+inline balltree<LeafType,D,REAL>::balltree(ball* bbegin,ball* bend,MakeParentFunc makeparent,size_t extra_leaf_size)
 {
-	std::forward_list<ball> ball_list=build_balltree_dfs(bbegin,bend,makeparent); 
+	std::forward_list<ball> ball_list=build_balltree_dfs(bbegin,bend,makeparent,extra_leaf_size); 
 	allnodes=std::vector<ball>(ball_list.begin(),ball_list.end());
 }
 template<class LeafType,unsigned int D,class REAL>

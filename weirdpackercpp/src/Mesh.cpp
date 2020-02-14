@@ -106,5 +106,9 @@ wp::Mesh wp::Mesh::transform(const Eigen::Matrix<float, 2, 3>& Rt, const wp::Mes
 	newmesh.transform_in_place(Rt);
 	return newmesh;
 }
-
+void wp::Mesh::merge_in_place(const Mesh& msh)
+{
+	triangles.insert(triangles.end(),msh.triangles.cbegin(),msh.triangles.cend());
+	bounding_box.extend(msh.bounding_box);
+}
 

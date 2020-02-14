@@ -62,12 +62,20 @@ inline Eigen::AlignedBox2f Triangle::bounds() const
 	
 	//return bb;
 }
-
-inline Triangle Triangle::transform(const Eigen::Matrix<float,2,3>& Rt,const Triangle& tri)
+inline void Triangle::transform_in_place(const Eigen::Matrix<float,2,3>& Rt)
 {
 	auto R=Rt.leftCols<2>();
 	auto t=Rt.rightCols<1>();
-	return Triangle{R*tri.p[0]+t,R*tri.p[1]+t,R*tri.p[2]+t};
+	p[0]=R*p[0]+t;
+	p[1]=R*p[1]+t;
+	p[2]=R*p[2]+t;
+}
+
+inline Triangle Triangle::transform(const Eigen::Matrix<float,2,3>& Rt,const Triangle& tri)
+{
+	Triangle ntri=tri;
+	ntri.transform_in_place(Rt);
+	return ntri;
 }
 
 }

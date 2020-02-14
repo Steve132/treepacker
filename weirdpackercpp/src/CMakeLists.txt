@@ -11,6 +11,8 @@ add_library(weirdpacker
 	Mesh.hpp
 	Renderer.cpp
 	Renderer.hpp
+	Cutout.hpp
+	Cutout.cpp
 )
 
 
