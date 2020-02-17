@@ -13,15 +13,16 @@ typedef balltransform<2,float> balltransform2f;
 
 //a cutout is essentially a balltree with a mesh bounding box, current transform, and merge ability
 
-
 class Cutout
 {
 public:
 	
 	wp::Mesh mesh;
 	balltree2f tree;
+	balltransform2f tform_tracker;
 	
 	Cutout(const wp::Mesh& msh);
+
 	
 	bool intersect(const Cutout& other,const balltransform2f& tform=balltransform2f()) const;
 	void transform_in_place(const balltransform2f& tform);

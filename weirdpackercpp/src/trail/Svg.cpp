@@ -48,11 +48,11 @@ public:
 		}
 		else if(tag=="ellipse")
 		{
-			//same as circle
+			//same as circle with a custom non-path 
 		}
 		else if(tag=="polygon")
 		{
-			//pout << 
+			//pout << "M" << node.attribute("points");
 		}
 		else if(tag=="path")
 		{

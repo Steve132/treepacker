@@ -75,7 +75,16 @@ public:
 	{
 		return !disp.is_closed();
 	}
-	
+	bool key_released(const char* kc)
+	{
+		unsigned int kcode=CImgDisplay::keycode(kc);
+		bool v=disp.key()==kcode;
+		if(v)
+		{
+			disp.set_key(kcode,false);
+		}
+		return v;
+	}
 };
 
 
@@ -112,6 +121,10 @@ void Renderer::clear(const Color& clearcolor)
 void Renderer::update(int n)
 {
 	impl->update(n);
+}
+bool Renderer::key_released(const char* kc)
+{
+	return impl->key_released(kc);
 }
 bool Renderer::isOpen()
 {

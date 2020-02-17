@@ -19,6 +19,7 @@ struct EuclideanTransform
 	EuclideanTransform& operator*=(const EuclideanTransform& other);
 	EuclideanTransform operator*(const EuclideanTransform& other) const;
 	Eigen::Matrix<REAL,D,1> operator*(const Eigen::Matrix<REAL,D,1>& ov) const;
+	EuclideanTransform inverse() const;
 };
 
 
@@ -64,9 +65,19 @@ inline EuclideanTransform<D,REAL> EuclideanTransform<D,REAL>::from_euclidean_pma
 	EuclideanTransform trs(
 		a.rightCols(1),
 		a.leftCols(D));
-	trs.scale=std::sqrt(trs.rotation.squaredNorm()/static_cast<REAL>(D));
+	trs.scale=a.leftCols(1).norm(); //Frob is O(n^2) and RTR is O(n^3)
 	trs.rotation/=trs.scale;
 	trs.translation/=trs.scale;
 }
-
+template<unsigned int D,class REAL>
+inline EuclideanTransform<D,REAL> EuclideanTransform<D,REAL>::inverse() const
+{
+	//inv([I | T2] R2 S)=inv(S) inv(R2) inv([I | T2]) 
+	//(1/S) iR [I -T]
+	//iR/S [I -T]
+	//[iR/S | iR/S(-T)]
+	//[I | iR/S(-T)]
+	auto iR=rotation.transpose();
+	return EuclideanTransform(iR*(-translation/scale),iR,static_cast<REAL>(1.0)/scale);
+}
 #endif

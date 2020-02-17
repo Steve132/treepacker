@@ -51,12 +51,12 @@ static balltree2f build_btree(const std::vector<wp::Triangle>& tris)
 		all_balls.emplace_back(tris[i],Eigen::Vector2f(ecirc.x(),ecirc.y()),ecirc.z());
 	}
 	
-	balltree2f bt(all_balls.data(),all_balls.data()+all_balls.size(),aabb_parentfunc,1);
+	balltree2f bt(all_balls.data(),all_balls.data()+all_balls.size(),aabb_parentfunc,0);
 	return bt;
 }
 Cutout::Cutout(const wp::Mesh& msh):
 	mesh(msh),
-	tree(build_btree(msh.triangles))
+	tree(build_btree(mesh.triangles))
 {}
 void wp::Cutout::transform_in_place(const balltransform2f& tform)
 {
@@ -67,4 +67,14 @@ void wp::Cutout::transform_in_place(const balltransform2f& tform)
 		tree.allnodes[i].transform_in_place(tform);
 		tree.allnodes[i].leaf.transform_in_place(mtform);
 	}
+	tform_tracker=tform*tform_tracker;
 }
+
+void wp::Cutout::merge_in_place(const Cutout& other,const balltransform2f& tform)
+{
+	wp::Mesh mshtmp=other.mesh;
+	mshtmp.transform_in_place(tform.pmatrix());
+	mesh.merge_in_place(mshtmp);
+	tree=build_btree(mesh.triangles);
+}
+

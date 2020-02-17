@@ -28,6 +28,8 @@ public:
 	
 	void clear(const Color& clearcolor=Color{0,0,0});
 	Eigen::Vector2f getMousePosition();
+	bool key_released(const char* kcode);
+	
 	
 	void update(int n=0);
 	bool isOpen();

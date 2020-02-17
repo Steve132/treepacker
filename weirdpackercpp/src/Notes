@@ -42,3 +42,9 @@ select(const MeshTree& parents,const MeshTree& children,const std::vector<double
 } 
 
 This is almost certainly going to need to have 
+
+TODO: viewbox width=100 height=50 viewBox="0 0 20 10" 
+TODO: svg group scaling and transform attribute parsers
+TODO: svg shape nodes
+TODO: svg absolute scale components
+TODO: refactor everything to use const MatrixBase<Derived>& instead of const Matrix<REAL,D,D+1>& 

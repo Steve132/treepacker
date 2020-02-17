@@ -93,19 +93,28 @@ template<class LeafType,unsigned int D,class REAL>
 		ballbase<D,REAL>(a,b),
 		leaf(lt)
 	{}
+	
+template<class ListType>
+static inline size_t enforce_min_size(ListType& lst,size_t min_size)
+{
+	size_t cnt=lst.front().num_children;
+	if(cnt < min_size)
+	{
+		lst.pop_front();
+		return cnt;
+	}
+	return cnt+1;
+}
 template<class LeafType,unsigned int D,class REAL>
 template<class MakeParentFunc>
 inline std::forward_list<typename balltree<LeafType,D,REAL>::ball> balltree<LeafType,D,REAL>::build_balltree_dfs(ball* bbegin,ball* bend,MakeParentFunc makeparent,size_t extra_leaf_size)
 {
 	size_t n=bend-bbegin;
-	extra_leaf_size=0;//TODO: this parameter doesn't work so disable it
-	if(n<=(extra_leaf_size+1))
+	extra_leaf_size=0;
+	if(n<=1)
 	{
 		std::forward_list<ball> lo;
-		for(size_t k=0;k<(extra_leaf_size+1);k++)
-		{
-			lo.push_front(*bbegin);
-		}
+		lo.push_front(*bbegin);
 		return lo;
 	}
 	Eigen::Matrix<REAL,D,1> pos_mean,pos_sum=Eigen::Matrix<REAL,D,1>::Zero();
@@ -131,17 +140,25 @@ inline std::forward_list<typename balltree<LeafType,D,REAL>::ball> balltree<Leaf
 	{
 		return a.temp_projector < b.temp_projector;
 	});
-	auto left_list=build_balltree_dfs(bbegin,bmid,makeparent,extra_leaf_size);
+	auto left_list=build_balltree_dfs(bbegin,bmid,makeparent,extra_leaf_size); //this probably could/should be replaced with a vector initialize and then reversal
 	auto right_list=build_balltree_dfs(bmid,bend,makeparent,extra_leaf_size);
 	bool swaplr=false;
 	ball newroot=makeparent(left_list.front(),right_list.front(),bbegin,bend,swaplr);
-
+	
+	newroot.num_children=0;
+	newroot.num_children+=enforce_min_size(left_list,extra_leaf_size);
+	newroot.num_children+=enforce_min_size(right_list,extra_leaf_size);
+	
 	if(swaplr)
 	{
 		std::swap(right_list,left_list);
 	}
 	right_list.splice_after(right_list.before_begin(),left_list,left_list.before_begin(),left_list.end());
+	
 	right_list.push_front(newroot);
+	
+	
+	
 	return right_list;
 }
 

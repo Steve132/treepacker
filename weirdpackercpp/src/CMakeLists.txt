@@ -32,3 +32,9 @@ add_executable(test_path2shape
 	test_path2shape.cpp)
 target_link_libraries(test_path2shape weirdpacker pthread)
 set_target_properties(test_path2shape PROPERTIES CXX_STANDARD 11)
+
+
+add_executable(test_cutoutpacking
+	test_cutoutpacking.cpp)
+target_link_libraries(test_cutoutpacking weirdpacker pthread)
+set_target_properties(test_cutoutpacking PROPERTIES CXX_STANDARD 11)
