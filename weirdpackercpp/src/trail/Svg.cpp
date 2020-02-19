@@ -38,9 +38,14 @@ public:
 		std::ostringstream pout;
 		if(tag=="rect")
 		{
-//			Eigen::Vector2d ul(node.attribute("x").value(),node.attribute("y").value());
-//			Eigen::Vector2d wh(node.attribute("width").value(),node.attribute("h").value());
-//			pout << "M " << ul.x() << "," << ul.y() << " W " << wh.x() << " H " << wh.y() << " W " << -wh.x() << " z";
+			Eigen::Vector2d ul,wh;
+			std::istringstream(node.attribute("x").value()) >> ul.x();
+			std::istringstream(node.attribute("y").value()) >> ul.y();
+			std::istringstream(node.attribute("width").value()) >> wh.x();
+			std::istringstream(node.attribute("height").value()) >> wh.y();
+			
+			pout << "M " << ul.x() << "," << ul.y() << " H " << wh.x() << " V " << wh.y() << " H " << -wh.x() << " z";
+			return pout.str();
 		}
 		else if(tag=="circle")
 		{
@@ -52,7 +57,8 @@ public:
 		}
 		else if(tag=="polygon")
 		{
-			//pout << "M" << node.attribute("points");
+			pout << "M " << node.attribute("points");
+			return pout.str();
 		}
 		else if(tag=="path")
 		{

@@ -11,6 +11,7 @@
 #include "SampleWithoutReplacement.hpp"
 #include <vector>
 #include <unordered_map>
+#include <gperftools/profiler.h>
 
 	
 std::vector<size_t> split_dominant_bisect(size_t N)
@@ -51,6 +52,7 @@ void randomWeightTest()
 	{
 		std::cout << outindices[i] << ",";
 	}
+	std::cout << rengine << std::endl;
 	std::cout << std::endl;
 }
 
@@ -100,10 +102,37 @@ void splitDBtest()
 	}
 }
 
+wp::balltransform2f find_first_fit(const wp::Cutout& table,const wp::Cutout& test,const Eigen::Vector2f& increment,const Eigen::Vector2f& bounds)
+{
+	Eigen::AlignedBox2f tbb=test.mesh.bounding_box;
+	Eigen::Vector2f ntest=(bounds-tbb.sizes());
+	ntest=ntest.array().min((table.mesh.bounding_box.max()+increment*2.0f).array());
+	Eigen::Vector2f ul=Eigen::Vector2f::Zero();
+	float cscore=bounds.prod();
+	wp::balltransform2f best_offset=ul;
+	//add a branch/bound step here where if you are outside the bounding box or worse than the current best (like if you're at the end of the x or the y) then you just bail.
+	for(ul.y()=0.0f;ul.y()<ntest.y();ul.y()+=increment.y()) //this doesn't work because we actually want to find the one that grows the overall bounding box the least.
+	for(ul.x()=0.0f;ul.x()<ntest.x();ul.x()+=increment.x())
+	{
+		wp::balltransform2f offset(ul);
+		if(!table.intersect(test,offset))
+		{
+			float score=table.mesh.bounding_box.max().array().max((tbb.max()+ul).array()).prod();
+			if(score < cscore)
+			{
+				cscore=score;
+				best_offset=offset;
+			}
+			break;
+		}
+	}
+	return best_offset;
+}
+
 int main(int argc,char** argv)
 {
-	//randomWeightTest();
-	splitDBtest();
+	randomWeightTest();
+	//splitDBtest();
 	return 0;
 	std::ifstream inpf("../../../data/drawing2tri.svg");
 	trail::SVG drawing;
@@ -127,10 +156,25 @@ int main(int argc,char** argv)
 		cutouts.back().transform_in_place(rtform2);
 	}
 	
+	int selected=0;
+	std::vector<wp::Cutout> oriented_cutouts=genAllOrientedCutouts(cutouts[1],genAllOrientations(90,false));
+	
+	wp::balltransform2f mouse_tform;
+	auto start=std::chrono::high_resolution_clock::now();
+	static const size_t N=10000;
+	#pragma omp parallel for
+	for(size_t i=0;i<N;i++)
+	{
+		mouse_tform=find_first_fit(cutouts[0],oriented_cutouts[selected],Eigen::Vector2f(0.01,0.01),Eigen::Vector2f(5.0f,3.0f));
+	}
+	auto dur=std::chrono::high_resolution_clock::now()-start;
+	std::cerr << static_cast<double>(N)/std::chrono::duration<double>(dur).count() << std::endl;
+
+	std::cerr << "mouse" << mouse_tform.translation << std::endl;
 	wp::Renderer r({800,600},3.0f);
 	r.clear({0x00,0x00,0x40});	
 	
-	wp::balltransform2f mouse_tform;
+	
 	
 	while(r.isOpen())
 	{
@@ -142,17 +186,20 @@ int main(int argc,char** argv)
 			r.draw(cutouts[0].tree.allnodes[i],{0x40,0x00,0x00},true);
 		}
 		
-		mouse_tform.translation=r.getMousePosition();
+		//mouse_tform.translation=r.getMousePosition();
 		if(r.key_released("SPACE"))
 		{
 			std::cout << "Spacebar" << std::endl;
+			selected=(selected+1) % oriented_cutouts.size();
+			//ProfilerStart("nameOfProfile.log");
 			
+			//ProfilerStop();
 		}
 		//std::cout << Rt2 << std::endl;
-		wp::Cutout temp_cut2=cutouts[1];
+		wp::Cutout temp_cut2=oriented_cutouts[selected];
 		temp_cut2.transform_in_place(mouse_tform);
 		
-		bool inter=cutouts[0].intersect(cutouts[1],mouse_tform);
+		bool inter=cutouts[0].intersect(oriented_cutouts[selected],mouse_tform);
 		
 		uint8_t cv=inter ? 0xFF : 0x00;
 		r.draw(temp_cut2.mesh,{cv,~cv,0x00},true);

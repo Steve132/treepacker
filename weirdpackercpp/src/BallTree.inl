@@ -182,19 +182,21 @@ template<class LeafType,unsigned int D,class REAL>
 template<class ClientIntersectFunc>
 inline bool balltree<LeafType,D,REAL>::intersect_callable(ClientIntersectFunc client_intersect_func,size_t iroot) const
 {
-	for(size_t root=iroot;root < allnodes.size();root++)
+	register size_t N=allnodes.size(); 
+	for(size_t root=iroot;root < N;root++)
 	{
 		const ball& thisnode=allnodes[root];
+		register size_t num_children=thisnode.num_children;
 		if(client_intersect_func(thisnode))
 		{
-			if(thisnode.num_children==0) 
+			if(num_children==0) 
 			{
 				return true;
 			}
 		}
 		else
 		{
-			root+=thisnode.num_children;
+			root+=num_children;
 		}
 	}
 	return false;
