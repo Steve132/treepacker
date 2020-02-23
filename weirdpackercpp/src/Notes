@@ -48,3 +48,84 @@ TODO: svg group scaling and transform attribute parsers
 TODO: svg shape nodes
 TODO: svg absolute scale components
 TODO: refactor everything to use const MatrixBase<Derived>& instead of const Matrix<REAL,D,D+1>& 
+
+
+
+So, I did
+I actually decided I'm doing something a little different ly than that
+And I think I can justify it theoretically
+So I'm essentially doing exactly the method listed on page 750
+the 8 step algorithm
+except instead of computing the no-fit-polygon
+I'm actually doing something that I think I can prove is faster
+the no fit polygon is basically saying this:
+
+for each point Ax,Ay on the boundary of part A:
+for each point Bx,By on the boundary of part B:
+for each rotation Theta you want to allow for B: 
+if not intersect (die)
+which you can see is a triple for loop:  the number of boundary points of A, the number of boundary points of B, the number of rotations Theta
+It's important to note here that you have to do like, a bunch of points
+so even if it's a square you can't just do 4 points
+because you have to discretize the edges
+Like, each edge is discretized so there's a fixed max distance between points
+in the NFP algorithm
+So...here's where this gets interesting
+I did something else
+I did
+for each x value Ax inside the width of the bounding box of A, for each y value Ay inside the height of the bounding box of A, 
+for each angle Theta, 
+intersect(A,B)
+Notice
+this is still a triple for loops
+but it iterates over every single point in the space inside the bounding box
+So...why do this?
+it seems intuitively that the number of points on the boundary of a shape is going to be less than the number of points inside the area of a shape
+because, you know, area is more than length
+and volume is more than area
+But here's the weird part
+with my version, it's still a triple for loop
+because even though it's using area not boundary, I don't have to iterate over the B polygon parts at all
+So that got me thinking
+if they're both O(nkv)
+like
+if they're both triple for loops
+Which one is actually faster
+And I think mine is
+Here's why
+imagine a pathological case of two 16-sided stars
+or like, a maze
+or something
+the total boundary is actually pretty long for a single shape...many times the length of one side of the bounding box for that shape
+And if both shapes have long boundaries, then each of your for loops is actually a lot longer
+for example, if the bounding box of shape A is 10x20
+and the bounding box of shape B is 5x4
+the maximum number of times through the loop I have to compare is 10x20=200
+but what if shape A and shape B is literally a square
+well, rectangle
+with the NIP method, the number of points on the boundary of A will be (10+10+20+20)=60, and B will be (5+5+4+4)=18
+so I have to do a loop of 60x18 times
+which is 1080
+And the problem gets worse if the shapes are more complicated than a rectangle
+In fact, quadratically worse
+In fact, you can even show that my way will always perform better
+for an object with a bounding rectangle of, say, 10 by 10
+the smallest possible boundary length is a circle
+so a circle with diameter 10 has a boundary length of 3.1415*10
+So doing the NIP algorithm on a circle (which is the smallest possible boundary of verticle size 10)
+will be a double for loop with  (3.1415x10)x(3.1415x10) iterations=900
+but doing my algorithm will just iterate over the internal surface area of the 10x10 square bounding circle A
+which is only 10x10 points
+=100 iterations
+I'm pretty sure computing the optimum placement for two shapes with bounding square Aw,Bw using NIP is always at least 3.14159^2 Aw Bw steps
+and computing the optimum placement for two shapes using iterating over the internal bounding volume of A
+is going to be Aw*Aw steps
+I suppose if in practice Bw < 3.14^2 Aw then I'd expect the NIP one to be faster
+but I think it's harder to implement too
+And I bet most of the time Bw <= 10Aw
+Anyway
+just some cool thoughts
+
+https://nestprofessor.com/articles/Nesting%20software%20Algorithm.pdf?fbclid=IwAR3RYsLWFRkQSZLHbwOiC6U1Ql0JApJiZbO-W-y2JW47CD1gkZpSpE1p_QE
+
+

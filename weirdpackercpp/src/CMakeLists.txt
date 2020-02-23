@@ -16,6 +16,12 @@ add_library(weirdpacker
 	Renderer.hpp
 	Cutout.hpp
 	Cutout.cpp
+	CutoutSet.hpp
+	CutoutSet.cpp
+	Optimize.cpp
+	Optimize.hpp
+	OptimizerCPU.cpp
+	OptimizerCPU.hpp
 )
 
 find_package(OpenMP)
