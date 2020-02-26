@@ -10,7 +10,10 @@ namespace wp
 	{
 	private:
 		CutoutSet allcutoutscache;
+		std::vector<float> yvals;
+		void select_indices(std::vector<size_t>& out);
 		void build_cs(const ProblemDefinition& pd);
+		void place_one(Cutout& table,size_t part_id);
 	public:
 		OptimizerCPU(const OptimizeState& os);
 		virtual void next(size_t extra=0);

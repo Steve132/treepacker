@@ -14,53 +14,6 @@
 #include <gperftools/profiler.h>
 #include "CutoutSet.hpp"
 
-void randomWeightTest()
-{
-	const double weights[]={10.0,10.0,0.01,0.01};
-	std::vector<size_t> outindices(5);
-	size_t cnt=3;
-	std::default_random_engine rengine(std::chrono::system_clock::now().time_since_epoch().count());
-	
-	ordered_sample_without_replacement_indices(weights,weights+5,cnt,rengine,outindices.begin());
-	for(size_t i=0;i<cnt;i++)
-	{
-		std::cout << outindices[i] << ",";
-	}
-	//std::cout << rengine << std::endl;
-	//std::cout << std::endl;
-}
-static inline float do_score(const wp::Cutout& table,const wp::Cutout& test,const Eigen::Vector2f& ul)
-{
-	return table.mesh.bounding_box.max().array().max((test.mesh.bounding_box.sizes()+ul).array()).prod();
-}
-wp::balltransform2f find_first_fit(const wp::Cutout& table,const wp::Cutout& test,const Eigen::Vector2f& increment,const Eigen::Vector2f& bounds)
-{
-	Eigen::AlignedBox2f testbb=test.mesh.bounding_box;
-	Eigen::Vector2f ntest=(bounds-testbb.sizes());
-	
-	ntest=ntest.array().min((table.mesh.bounding_box.max()+increment*2.0f).array());
-	Eigen::Vector2f ul=Eigen::Vector2f::Zero();
-	float cscore=(ntest+testbb.sizes()).array().prod();
-	wp::balltransform2f best_offset=ul;
-	//add a branch/bound step here where if you are outside the bounding box or worse than the current best (like if you're at the end of the x or the y) then you just bail.
-	for(ul.y()=0.0f;ul.y()<=ntest.y();ul.y()+=increment.y()) //this doesn't work because we actually want to find the one that grows the overall bounding box the least.
-	for(ul.x()=0.0f;ul.x()<=ntest.x();ul.x()+=increment.x())
-	{
-		wp::balltransform2f offset(ul);
-		float score=do_score(table,test,ul);
-		if(score < cscore)
-		{
-			if(!table.intersect(test,offset))
-			{
-				cscore=score;
-				best_offset=offset;
-				break;
-			}
-		}
-	}
-	
-	return best_offset;
-}
 
 int main(int argc,char** argv)
 {

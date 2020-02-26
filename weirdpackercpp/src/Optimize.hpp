@@ -9,24 +9,23 @@
 
 namespace wp
 {
-	
-	class Candidate
+	struct Candidate
 	{
 		float score;
 		std::vector<size_t> part_selection_indices;
 		std::vector<balltransform2f> orientation;
+		Eigen::AlignedBox2f bounds;
 	};
-	class ProblemDefinition
+	struct ProblemDefinition
 	{
 		std::vector<Cutout> cutouts;
 		Eigen::AlignedBox2f table_bounds;
-		std::vector<size_t> num_angles_per_cutout;
+		std::vector<int> num_angles_per_cutout;
 		Eigen::Vector2f increment_float;
 	};
 	
-	class OptimizeState
+	struct OptimizeState
 	{
-	public:
 		std::mt19937_64 engine; //standardize on mt19937_64 because we need a long period and it doesn't have to be hyper fast
 		Candidate current_best;
 		ProblemDefinition pd;
