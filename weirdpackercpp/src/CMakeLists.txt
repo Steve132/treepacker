@@ -45,6 +45,12 @@ add_executable(test_path2shape
 target_link_libraries(test_path2shape weirdpacker pthread)
 set_target_properties(test_path2shape PROPERTIES CXX_STANDARD 11)
 
+add_executable(test_optimizer
+	test_optimizer.cpp)
+target_link_libraries(test_optimizer weirdpacker OpenMP::OpenMP_CXX pthread)
+set_target_properties(test_optimizer PROPERTIES CXX_STANDARD 11)
+target_link_libraries(test_optimizer profiler )
+set_target_properties(test_optimizer PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO -DWITHGPERFTOOLS)
 
 add_executable(test_cutoutpacking
 	test_cutoutpacking.cpp)
