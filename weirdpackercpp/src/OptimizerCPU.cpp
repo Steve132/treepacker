@@ -16,7 +16,7 @@ wp::OptimizerCPU::OptimizerCPU(const OptimizeState& tstate):
 {
 	build_cs(tstate.pd);
 	state.current_best.score=std::numeric_limits<float>::max();
-	size_t Ny=2+state.pd.table_bounds.max().y()/state.pd.increment_float.y();
+	size_t Ny=2+state.pd.table_bounds.y()/state.pd.increment_float.y();
 	yvals.resize(Ny);
 }
 
@@ -41,11 +41,11 @@ static inline float do_score(const Eigen::Vector2f& ntest,const Eigen::Vector2f&
 	return ntest.array().max((testbb+ul).array()).prod(); //minimize L1
 }
 
-void wp::OptimizerCPU::place_one(const Eigen:Vector2f& tablebb,size_t part_id,size_t& rotation_out,wp::balltransform2f& transform_out)
+void wp::OptimizerCPU::place_one(const Cutout& table,size_t part_id,size_t& rotation_out,wp::balltransform2f& transform_out)
 {
 	const std::vector<Cutout>& rotations=allcutoutscache.cutouts[part_id];
 
-	Eigen::Vector2f ntest(tablebb.x(),state.pd.table_bounds.y());
+	Eigen::Vector2f ntest(table.mesh.bounding_box.min().x(),state.pd.table_bounds.y());
 	Eigen::Vector2f incg=state.pd.increment_float;
 	ntest.x()+=2.0f*incg.x();
 	const size_t Ny=yvals.size();
@@ -114,6 +114,7 @@ void wp::OptimizerCPU::place_one(const Eigen:Vector2f& tablebb,size_t part_id,si
 
 void wp::OptimizerCPU::next(size_t extra)
 {
+
 	for(size_t i=0;i<extra;i++)
 	{
 		next(0);
@@ -125,22 +126,21 @@ void wp::OptimizerCPU::next(size_t extra)
 	wp::balltransform2f tfnext;
 	size_t ridnext;
 	
-	place_one(Eigen::AlignedBox2f(0.0f,0.0f,0.0f,state.pd.table_bounds.max().y()),cur.part_selection_indices[0],ridnext,tfnext);
 	
-	Cutout table(rotations[ridnext]);
-	table.
-	do
-	{
-		
-	}
-	/*Cutout table;//(cur.part_selection_indices[0]); //TODO weird issue:first part shows up in upper left in no rotation every time.
+	
+	Cutout table(allcutoutscache.cutouts[cur.part_selection_indices[0]][0]); //TODO weird issue:first part shows up in upper left in no rotation every time.
+	//place_one(table,cur.part_selection_indices[0],ridnext,tfnext);
+	
 	for(size_t placement_stage=0;cur.part_selection_indices.size();placement_stage++)
 	{
-		place_one(table,cur.part_selection_indices[placement_stage]);
+		size_t rotation_out;
+		wp::balltransform2f transform_out;
+		place_one(table,cur.part_selection_indices[placement_stage],rotation_out,transform_out);
+		//TODO Sarah: 
 	}
 	cur.score=table.mesh.bounding_box.sizes().x();
 	if(cur.score < state.current_best.score)
 	{
-		//convert rotation indices back into angles and fold into offsets, update best candidate
-	}*/
+		//TODO Sarah: convert rotation indices back into angles and fold into offsets, update best candidate
+	}
 }
