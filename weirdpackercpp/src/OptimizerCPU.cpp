@@ -41,11 +41,11 @@ static inline float do_score(const Eigen::Vector2f& ntest,const Eigen::Vector2f&
 	return ntest.array().max((testbb+ul).array()).prod(); //minimize L1
 }
 
-void wp::OptimizerCPU::place_one(Cutout& table,size_t part_id)
+void wp::OptimizerCPU::place_one(const Eigen:Vector2f& tablebb,size_t part_id,size_t& rotation_out,wp::balltransform2f& transform_out)
 {
 	const std::vector<Cutout>& rotations=allcutoutscache.cutouts[part_id];
 
-	Eigen::Vector2f ntest(table.mesh.bounding_box.sizes().x(),state.pd.table_bounds.max().y());
+	Eigen::Vector2f ntest(tablebb.x(),state.pd.table_bounds.y());
 	Eigen::Vector2f incg=state.pd.increment_float;
 	ntest.x()+=2.0f*incg.x();
 	const size_t Ny=yvals.size();
@@ -58,7 +58,7 @@ void wp::OptimizerCPU::place_one(Cutout& table,size_t part_id)
 	size_t best_global_rotation=0;
 	wp::balltransform2f best_global_offset(ntest);
 
-	#pragma omp parallel for schedule(dynamic)
+	//#pragma omp parallel for schedule(dynamic)
 	for(size_t yi=0;yi<Ny;yi++)
 	{
 		const Eigen::Vector2f incloc=incg;
@@ -108,9 +108,10 @@ void wp::OptimizerCPU::place_one(Cutout& table,size_t part_id)
 			}
 		}
 	}
-	table.merge_in_place(rotations[best_global_rotation],best_global_offset);
+	rotation_out=best_global_rotation;
+	transform_out=best_global_offset;
 }
-//Todo thread all of this
+
 void wp::OptimizerCPU::next(size_t extra)
 {
 	for(size_t i=0;i<extra;i++)
@@ -121,7 +122,18 @@ void wp::OptimizerCPU::next(size_t extra)
 	Candidate cur;
 	select_indices(cur.part_selection_indices);
 	
-	Cutout table;//(cur.part_selection_indices[0]); //TODO weird issue:first part shows up in upper left in no rotation every time.
+	wp::balltransform2f tfnext;
+	size_t ridnext;
+	
+	place_one(Eigen::AlignedBox2f(0.0f,0.0f,0.0f,state.pd.table_bounds.max().y()),cur.part_selection_indices[0],ridnext,tfnext);
+	
+	Cutout table(rotations[ridnext]);
+	table.
+	do
+	{
+		
+	}
+	/*Cutout table;//(cur.part_selection_indices[0]); //TODO weird issue:first part shows up in upper left in no rotation every time.
 	for(size_t placement_stage=0;cur.part_selection_indices.size();placement_stage++)
 	{
 		place_one(table,cur.part_selection_indices[placement_stage]);
@@ -130,5 +142,5 @@ void wp::OptimizerCPU::next(size_t extra)
 	if(cur.score < state.current_best.score)
 	{
 		//convert rotation indices back into angles and fold into offsets, update best candidate
-	}
+	}*/
 }

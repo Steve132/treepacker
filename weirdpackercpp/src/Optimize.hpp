@@ -14,12 +14,12 @@ namespace wp
 		float score;
 		std::vector<size_t> part_selection_indices;
 		std::vector<balltransform2f> orientation;
-		Eigen::AlignedBox2f bounds;
+		Eigen::Vector2f bounds;
 	};
 	struct ProblemDefinition
 	{
 		std::vector<Cutout> cutouts;
-		Eigen::AlignedBox2f table_bounds;
+		Eigen::Vector2f table_bounds;
 		std::vector<int> num_angles_per_cutout;
 		Eigen::Vector2f increment_float;
 	};

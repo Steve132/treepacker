@@ -17,9 +17,7 @@
 
 int main(int argc,char** argv)
 {
-	randomWeightTest();
-	//splitDBtest();
-
+	
 	std::ifstream inpf("../../../data/drawing2tri.svg");
 	trail::SVG drawing;
 	inpf >> drawing;
@@ -53,7 +51,7 @@ int main(int argc,char** argv)
 	//#pragma omp parallel for
 	for(size_t i=0;i<N;i++)
 	{
-		mouse_tform=find_first_fit(cutouts[0],cs.cutouts[1][selected],Eigen::Vector2f(0.01,0.01),Eigen::Vector2f(5.0f,3.0f));
+		//mouse_tform=find_first_fit(cutouts[0],cs.cutouts[1][selected],Eigen::Vector2f(0.01,0.01),Eigen::Vector2f(5.0f,3.0f));
 	}
 	auto dur=std::chrono::high_resolution_clock::now()-start;
 	std::cerr << static_cast<double>(N)/std::chrono::duration<double>(dur).count() << std::endl;
