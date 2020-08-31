@@ -1,6 +1,3 @@
-
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -march=native -DNDEBUG")
-
 add_subdirectory(deps)
 add_subdirectory(trail)
 
